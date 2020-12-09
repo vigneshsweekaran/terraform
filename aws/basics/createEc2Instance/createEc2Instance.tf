@@ -7,8 +7,14 @@ terraform {
     }
 }
 
+variable "aws_region" {
+  description = "AWS region"
+  #default = ap-south-1
+  type = string
+}
+
 provider "aws" {
-    region = "ap-south-1"
+    region = var.aws_region
 }
 
 resource "aws_instance" "ubuntu" {
@@ -22,3 +28,6 @@ resource "aws_instance" "ubuntu" {
     } 
 }
 
+output "ec2_instance_public_ip" {
+  value = aws_instance.ubuntu.public_ip
+}

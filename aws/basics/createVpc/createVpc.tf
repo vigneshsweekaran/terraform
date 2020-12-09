@@ -11,6 +11,12 @@ provider aws {
    region = "ap-south-1" 
 }
 
+# variables
+variable "subnet_vars" {
+  description = "subnet cidr values"
+  
+}
+
 # 1. Create VPC
 resource "aws_vpc" "vpc_dev" {
   cidr_block       = "10.1.0.0/16"
@@ -57,8 +63,8 @@ resource "aws_route_table" "rt_private_dev" {
 # 4. Create subnet
 resource "aws_subnet" "subnet_public_1a_dev" {
   vpc_id     = aws_vpc.vpc_dev.id
-  availability_zone = "ap-south-1a"
-  cidr_block = "10.1.1.0/24"
+  availability_zone = var.subnet_vars[0].az
+  cidr_block = var.subnet_vars[0].cidr
 
   tags = {
     Name = "subnet_public_1a_dev"
@@ -67,8 +73,8 @@ resource "aws_subnet" "subnet_public_1a_dev" {
 
 resource "aws_subnet" "subnet_public_1b_dev" {
   vpc_id     = aws_vpc.vpc_dev.id
-  availability_zone = "ap-south-1b"
-  cidr_block = "10.1.2.0/24"
+  availability_zone = var.subnet_vars[1].az
+  cidr_block = var.subnet_vars[1].cidr
 
   tags = {
     Name = "subnet_public_1b_dev"
@@ -77,8 +83,8 @@ resource "aws_subnet" "subnet_public_1b_dev" {
 
 resource "aws_subnet" "subnet_private_1a_dev" {
   vpc_id     = aws_vpc.vpc_dev.id
-  availability_zone = "ap-south-1a"
-  cidr_block = "10.1.3.0/24"
+  availability_zone = var.subnet_vars[2].az
+  cidr_block = var.subnet_vars[2].cidr
 
   tags = {
     Name = "subnet_private_1a_dev"
@@ -87,8 +93,8 @@ resource "aws_subnet" "subnet_private_1a_dev" {
 
 resource "aws_subnet" "subnet_private_1b_dev" {
   vpc_id     = aws_vpc.vpc_dev.id
-  availability_zone = "ap-south-1b"
-  cidr_block = "10.1.4.0/24"
+  availability_zone = var.subnet_vars[3].az
+  cidr_block = var.subnet_vars[3].cidr
 
   tags = {
     Name = "subnet_private_1b_dev"
