@@ -15,6 +15,7 @@ variable "aws_region" {
 
 provider "aws" {
     region = var.aws_region
+    profile = "terraform"
 }
 
 resource "aws_instance" "ubuntu" {
@@ -29,5 +30,5 @@ resource "aws_instance" "ubuntu" {
 }
 
 output "ec2_instance_public_ip" {
-  value = aws_instance.ubuntu.public_ip
+    value = aws_instance.ubuntu.public_ip
 }
