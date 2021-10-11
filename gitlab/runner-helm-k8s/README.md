@@ -1,6 +1,7 @@
 ## Terraform script to deploy a gitlab runner on AWS EKS cluster
 
 ### Prerequisites
+* EKS cluster should be already created
 * If Using S3 backend for state file, s3 bucket and dynamodb should be already created.
 
 ### Command Usage with local state file
