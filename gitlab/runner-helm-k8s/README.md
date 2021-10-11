@@ -1,72 +1,57 @@
-## Terraform script to deploy a gitlab runner on kubernetes cluster
+## Terraform script to deploy a gitlab runner on AWS EKS cluster
 
 ### Prerequisites
-AWS credentials AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY should be already configured
+* If Using S3 backend for state file, s3 bucket and dynamodb should be already created.
 
 ### Command Usage with local state file
-Init a terraform
+##### Terraform Init
+(Option 1) Terraform init using local state file
 ```
 terraform init
 ```
 
-validate a terraform script
-```
-terraform validate
-```
-
-Plan
-```
-terraform plan \
-  -var="eks_cluster_name=eks-cluster" \
-  -var="runner_registration_token=<runner-token>"
-```
-
-Apply
-```
-terraform apply \
-  -var eks_cluster_name-"eks-cluster" \
-  -var="runner_registration_token=<runner-token>"
-```
-
-Destroy
-```
-terraform destroy \
-  -var eks_cluster_name-"eks-cluster" \
-  -var="runner_registration_token=<runner-token>"
-```
-
-### Command Usage with S3 backend state file
-Init a terraform
+(Option 2) Terraform init using S3 backend state file
 ```
 terraform init \
-  -backend-config="key=roles/terraform.tfstate" \
-  -backend-config="dynamodb_table=terraform_state-dynamodb" \
-  -backend-config="access_key=<access-key>" \
-  -backend-config="secret_key=<secret-key>"
+  -backend-config="bucket=terraform-state" \
+  -backend-config="key=gitlab-runner-1/terraform.tfstate" \
+  -backend-config="region=us-west-2" \
+  -backend-config="dynamodb_table=terraform_state" \
+  -backend-config="access_key=<AWS_ACCESS_KEY_ID>" \
+  -backend-config="secret_key=<AWS_SECRET_ACCESS_KEY>"
 ```
 
-validate a terraform script
+##### Terraform Validate
 ```
 terraform validate
 ```
 
-Plan
+##### Terraform Plan
 ```
 terraform plan \
+  -var="cache_bucket_access_key=<AWS_ACCESS_KEY_ID>"
+  -var="cache_bucket_secret_key=<AWS_SECRET_ACCESS_KEY>"
+  -var="cache_bucket_name=<cache_bucket_name>"
   -var="eks_cluster_name=eks-cluster" \
   -var="runner_registration_token=<runner-token>"
 ```
 
-Apply
+##### Terraform Apply
 ```
 terraform apply \
-  -var eks_cluster_name-"eks-cluster" \
+  -var="cache_bucket_access_key=<AWS_ACCESS_KEY_ID>" \
+  -var="cache_bucket_secret_key=<AWS_SECRET_ACCESS_KEY>" \
+  -var="cache_bucket_name=<cache_bucket_name>" \
+  -var="eks_cluster_name=eks-cluster" \
   -var="runner_registration_token=<runner-token>"
 ```
 
-Destroy
+##### Terraform Destroy
 ```
 terraform destroy \
-  -var eks_cluster_name-"eks-cluster" \
+  -var="cache_bucket_access_key=<AWS_ACCESS_KEY_ID>" \
+  -var="cache_bucket_secret_key=<AWS_SECRET_ACCESS_KEY>" \
+  -var="cache_bucket_name=<cache_bucket_name>" \
+  -var="eks_cluster_name=eks-cluster" \
   -var="runner_registration_token=<runner-token>"
 ```

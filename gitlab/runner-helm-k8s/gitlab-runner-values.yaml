@@ -2,3 +2,21 @@ gitlabUrl: "https://gitlab.com/"
 runnerRegistrationToken: ""
 rbac:
   create: true
+runners:
+  config: |
+    [[runners]]
+      [runners.kubernetes]
+        namespace = "{{.Release.Namespace}}"
+        image = "ubuntu:16.04"
+        [runners.cache]
+          Type = "s3"
+          Path = "runner"
+          Shared = true
+          [runners.cache.s3]
+            ServerAddress = "s3.amazonaws.com"
+            BucketName = "${cache_bucket_name}"
+            BucketLocation = "${region}"
+            Insecure = false
+  tags: "eks"
+  cache:
+    secretName: s3access

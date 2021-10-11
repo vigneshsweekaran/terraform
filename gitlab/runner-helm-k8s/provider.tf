@@ -1,4 +1,15 @@
 # Kubernetes cluster connection details from config file
+
+provider "aws" {
+  region = var.region
+  access_key = var.cache_bucket_access_key
+  secret_key = var.cache_bucket_secret_key
+}
+
+provider "kubernetes" {
+  config_path    = "~/.kube/config"
+}
+
 provider "helm" {
   kubernetes {
     config_path = "~/.kube/config"
@@ -20,6 +31,14 @@ provider "helm" {
 
 terraform {
   required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.21"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.5.0"
+    }
     helm = {
       source  = "hashicorp/helm"
       version = "~> 2.3.0"
@@ -27,12 +46,12 @@ terraform {
   }
 }
 
-# terraform {
-#   backend "s3" {
-#     #Provide key and dynamodb_table as backend configuration
-#     bucket = "terraform_state-eks"
-#     #key    = "gitlab-runner/terraform.tfstate"
-#     region = "us-west-2"
-#     #dynamodb_table = "terraform_state-eks"
-#   }
-# }
+terraform {
+ backend "s3" {
+    # Provide s3 bucket name, key and dynamodb table name as backend configuration
+    # bucket = "gitlab-runner-bucket"
+    # key    = "gitlab-runner-1/terraform.tfstate"
+    # region = "us-west-2"
+    # dynamodb_table = "terraform_state-gitlab-runner"
+  }
+}
