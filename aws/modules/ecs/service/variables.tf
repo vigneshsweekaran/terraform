@@ -3,11 +3,6 @@ variable "name" {
   description = "name for resources"
 }
 
-variable "service_discovery_registry_arn" {
-  type        = string
-  description = "arn of the service discovery registry"
-}
-
 variable "cluster_id" {
   type        = string
   description = "id of the ecs cluster to create the service in"

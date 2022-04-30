@@ -1,0 +1,5 @@
+.terraform
+terraform.*
+
+aws/root_modules/easyclaim/**/.terraform
+aws/root_modules/easyclaim/**/terraform.*

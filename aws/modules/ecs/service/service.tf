@@ -32,11 +32,7 @@ resource "aws_ecs_service" "main" {
     container_name   = var.container_name
     container_port   = var.container_port
   }
-
-  service_registries {
-    registry_arn = var.service_discovery_registry_arn
-  }
-
+  
   enable_ecs_managed_tags = true
   propagate_tags          = "TASK_DEFINITION"
 
