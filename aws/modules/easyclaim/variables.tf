@@ -58,3 +58,27 @@ variable "enable_backend_autoscaling" {
   description = "Enable/disable ecs service autoscaling "
   default     = false
 }
+
+variable "frontend_min_capacity" {
+  type        = number
+  description = "Minimum capacity for autoscaling"
+  default     = 1
+}
+
+variable "frontend_max_capacity" {
+  type        = number
+  description = "Maximum capacity for autoscaling"
+  default     = 3
+}
+
+variable "backend_min_capacity" {
+  type        = number
+  description = "Minimum capacity for autoscaling"
+  default     = 1
+}
+
+variable "backend_max_capacity" {
+  type        = number
+  description = "Maximum capacity for autoscaling"
+  default     = 3
+}

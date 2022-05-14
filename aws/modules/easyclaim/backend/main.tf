@@ -92,7 +92,7 @@ module "autoscaling" {
   name         = var.name
   cluster_name = var.cluster.name
   service_name = module.service.name
-  min_capacity = 1
-  max_capacity = 5
+  min_capacity = var.backend_min_capacity
+  max_capacity = var.backend_max_capacity
   tags         = local.tags
 }

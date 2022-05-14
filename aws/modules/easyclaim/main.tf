@@ -61,20 +61,22 @@ module "frontend" {
     aws         = aws
   }
 
-  name                           = "${var.name}-frontend"
-  name_env                       = var.name_env
-  cluster                        = aws_ecs_cluster.main
-  vpc_id                         = module.vpc.id
-  security_groups                = [aws_security_group.frontend.id]
-  subnet_ids                     = module.vpc.private_subnet_ids
-  image                          = var.frontend_image
-  deletion_protection            = var.deletion_protection
-  listener_arn                   = module.load_balancer.listener_arn
-  log_retention_days             = var.log_retention_days
-  tags                           = var.tags
-  load_balancer_security_group_id= aws_security_group.lb.id
-  deployment_prefix              = local.deployment_prefix
+  name                            = "${var.name}-frontend"
+  name_env                        = var.name_env
+  cluster                         = aws_ecs_cluster.main
+  vpc_id                          = module.vpc.id
+  security_groups                 = [aws_security_group.frontend.id]
+  subnet_ids                      = module.vpc.private_subnet_ids
+  image                           = var.frontend_image
+  deletion_protection             = var.deletion_protection
+  listener_arn                    = module.load_balancer.listener_arn
+  log_retention_days              = var.log_retention_days
+  tags                            = var.tags
+  load_balancer_security_group_id = aws_security_group.lb.id
+  deployment_prefix               = local.deployment_prefix
   enable_frontend_autoscaling     = var.enable_frontend_autoscaling
+  frontend_min_capacity           = var.frontend_min_capacity
+  frontend_max_capacity           = var.frontend_max_capacity
 }
 
 module "backend" {
@@ -97,4 +99,6 @@ module "backend" {
   load_balancer_security_group_id  = aws_security_group.lb.id
   deployment_prefix                = local.deployment_prefix
   enable_backend_autoscaling       = var.enable_backend_autoscaling
+  backend_min_capacity             = var.backend_min_capacity
+  backend_max_capacity             = var.backend_max_capacity
 }

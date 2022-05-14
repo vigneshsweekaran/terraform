@@ -22,10 +22,10 @@ variable "backend_image_tag" {
 
 variable "access_key" {
   type    = string
-  default = "AKIAXJ277CFQPC25KY6Z"
+  default = "AKIATZ7BBPWSRAN7XWME"
 }
 
 variable "secret_key" {
   type    = string
-  default = "dgDV+g5eaDdkuE6ZTnetCChiKvWeawMKtrElGw0d"
+  default = "tquZ4Q9MXuPmV6J3nmYuH2tb8inL/YxEYdj/q1DZ"
 }

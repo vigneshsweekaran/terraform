@@ -101,3 +101,15 @@ variable "enable_backend_autoscaling" {
   description = "Enable/disable autoscaling for backend service"
   default     = false
 }
+
+variable "backend_min_capacity" {
+  type        = number
+  description = "Minimum capacity for autoscaling"
+  default     = 1
+}
+
+variable "backend_max_capacity" {
+  type        = number
+  description = "Maximum capacity for autoscaling"
+  default     = 3
+}
