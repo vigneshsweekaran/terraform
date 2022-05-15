@@ -4,7 +4,7 @@ resource "aws_eks_fargate_profile" "main" {
   count                  = length(var.fp_namespaces)
   cluster_name           = tostring(local.json_data.cluster_name)
   fargate_profile_name   = format("fp-%s", element(var.fp_namespaces, count.index))
-  pod_execution_role_arn = var.fargate_pod_execution_role #add_role arn
+  pod_execution_role_arn = local.fargate_pod_execution_role #add_role arn
   subnet_ids             = [tostring(local.json_data.private_subnet1_id), tostring(local.json_data.private_subnet2_id)]
 
   selector {

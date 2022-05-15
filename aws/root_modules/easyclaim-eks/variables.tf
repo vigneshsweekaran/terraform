@@ -22,26 +22,40 @@ variable "cluster_name" {
 variable "vpc_id" {
   description = "Vpc id"
   type        = string
+  default = ""
 }
 
 variable "public_subnet1_id" {
   description = "Public subnet id 1"
   type        = string
+  default = ""
 }
 
 variable "public_subnet2_id" {
   description = "Public subnet id 2"
   type        = string
+  default = ""
 }
 
 variable "private_subnet1_id" {
   description = "Private subnet id 1"
   type        = string
+  default = ""
 }
 
 variable "private_subnet2_id" {
   description = "Private subnet id 1"
   type        = string
+  default = ""
+}
+
+variable "filter_tags" {
+  description = "Map of tags used to filter and get the vpc id and subnet id's"
+  type = map(string)
+
+  default = {
+    Name = ""
+  }
 }
 
 variable "instance_type" {
@@ -62,21 +76,6 @@ variable "node_autoscaling_desired" {
 variable "node_autoscaling_max" {
   description = "Maximum node count for autoscaling"
   type        = number
-}
-
-variable "eks_cluster_role" {
-  description = "eks_cluster_role arn"
-  type        = string
-}
-
-variable "eks_node_group_role" {
-  description = "eks_node_group_role arn"
-  type        = string
-}
-
-variable "fargate_pod_execution_role" {
-  description = "fargate_pod_execution_role arn"
-  type        = string
 }
 
 variable "fp_namespaces" {

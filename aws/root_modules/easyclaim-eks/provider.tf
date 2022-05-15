@@ -5,19 +5,19 @@ provider "aws" {
   secret_key = var.secret_key
 }
 
-data "aws_eks_cluster" "default" {
-  name = var.eks_cluster_name
-}
+# data "aws_eks_cluster" "default" {
+#   name = var.eks_cluster_name
+# }
 
-data "aws_eks_cluster_auth" "default" {
-  name = var.eks_cluster_name
-}
+# data "aws_eks_cluster_auth" "default" {
+#   name = var.eks_cluster_name
+# }
 
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.default.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.default.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.default.token
-}
+# provider "kubernetes" {
+#   host                   = data.aws_eks_cluster.default.endpoint
+#   cluster_ca_certificate = base64decode(data.aws_eks_cluster.default.certificate_authority[0].data)
+#   token                  = data.aws_eks_cluster_auth.default.token
+# }
 
 terraform {
   required_providers {
@@ -36,7 +36,7 @@ terraform {
   backend "s3" {
     # Provide key and dynamodb_table as backend configuration
     # bucket = "terraform-bucket-demo"
-    key    = "web-apps/admin-app/terraform.tfstate"
+    key    = "eks/${var.cluster_name}/terraform.tfstate"
     # region = "us-east-1"
     # dynamodb_table = "terraform_state-dynamodb"
   }

@@ -8,12 +8,26 @@ provider "kubernetes" {
   token                  = data.aws_eks_cluster_auth.cluster.token
 }
 
+data "aws_caller_identity" "current" {}
+
+data "aws_vpc" "vpc_id" {
+  tags = var.filter_tags
+}
+
 data "aws_eks_cluster" "cluster" {
   name = aws_eks_cluster.main.id
 }
 
 data "aws_eks_cluster_auth" "cluster" {
   name = aws_eks_cluster.main.id
+}
+
+locals {
+  role_prefix = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role"
+  eks_cluster_role = var.eks_cluster_role != "" ? var.eks_cluster_role : "${local.role_prefix}/eks-cluster-role"
+  eks_node_group_role = var.eks_node_group_role != "" ? var.eks_node_group_role : "${local.role_prefix}/eks-node-group-role"
+  fargate_pod_execution_role = var.fargate_pod_execution_role != "" ? var.fargate_pod_execution_role : "${local.role_prefix}/eks-fargate-pod-execution-role"
+  vpc_id = var.vpc_id != "" ? var.vpc_id : data.aws_vpc.vpc_id.id
 }
 
 resource "aws_cloudwatch_log_group" "eks_cluster" {
@@ -28,7 +42,7 @@ resource "aws_cloudwatch_log_group" "eks_cluster" {
 
 resource "aws_eks_cluster" "main" {
   name     = tostring(local.json_data.cluster_name)
-  role_arn = var.eks_cluster_role #add_role arn
+  role_arn = local.eks_cluster_role #add_role arn
 
   enabled_cluster_log_types = []
 
@@ -83,7 +97,7 @@ resource "aws_iam_openid_connect_provider" "example" {
 resource "aws_eks_node_group" "main" {
   cluster_name    = aws_eks_cluster.main.name
   node_group_name = "kube-system"
-  node_role_arn   = var.eks_node_group_role #add_role arn
+  node_role_arn   = local.eks_node_group_role #add_role arn
   subnet_ids      = [tostring(local.json_data.private_subnet1_id), tostring(local.json_data.private_subnet2_id)]
 
   scaling_config {
