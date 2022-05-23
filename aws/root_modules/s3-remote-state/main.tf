@@ -26,5 +26,6 @@ module "remote_state" {
     aws.replica = aws.replica
   }
   enable_replication = false
+  s3_bucket_force_destroy = true
   terraform_iam_policy_create = false
 }
