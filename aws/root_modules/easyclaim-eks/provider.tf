@@ -1,8 +1,8 @@
 provider "aws" {
   region = var.region
   #Not needed if aws-cli is configured
-  access_key = var.access_key
-  secret_key = var.secret_key
+  # access_key = var.access_key
+  # secret_key = var.secret_key
 }
 
 # data "aws_eks_cluster" "default" {
@@ -34,10 +34,6 @@ terraform {
 
 terraform {
   backend "s3" {
-    # Provide key and dynamodb_table as backend configuration
-    # bucket = "terraform-bucket-demo"
-    key    = "eks/${var.cluster_name}/terraform.tfstate"
-    # region = "us-east-1"
-    # dynamodb_table = "terraform_state-dynamodb"
+    key = "eks/easyclaim/terraform.tfstate"
   }
 }

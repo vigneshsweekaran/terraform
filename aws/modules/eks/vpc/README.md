@@ -1,0 +1,1 @@
+## Terraform script to create AWS VPC
