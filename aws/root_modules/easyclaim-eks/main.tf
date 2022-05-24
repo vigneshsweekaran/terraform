@@ -12,31 +12,31 @@ module "vpc" {
   private_subnet2_cidr              = var.private_subnet2_cidr
   private_subnet2_availability_zone = var.private_subnet2_availability_zone
 
-  cluster_name                      = var.cluster_name  
+  cluster_name = var.cluster_name
 }
 
-# module "eks" {
-#   source = "../../../modules/eks/cluster"
+module "role" {
+  source = "../../modules/eks/role"
+}
 
-#   region     = var.region
-#   access_key = var.access_key
-#   secret_key = var.secret_key
+module "eks" {
+  source = "../../modules/eks/cluster"
 
-#   environment_name = var.environment_name
-#   cluster_name = var.cluster_name
-#   vpc_id = local.vpc_id
-#   public_subnet1_id = var.public_subnet1_id
-#   public_subnet2_id = var.public_subnet2_id
-#   private_subnet1_id = var.private_subnet1_id
-#   private_subnet2_id = var.private_subnet2_id
+  environment_name   = var.environment_name
+  cluster_name       = var.cluster_name
+  vpc_id             = module.vpc.vpc_id
+  public_subnet1_id  = module.vpc.public_subnet1_id
+  public_subnet2_id  = module.vpc.public_subnet2_id
+  private_subnet1_id = module.vpc.private_subnet1_id
+  private_subnet2_id = module.vpc.private_subnet2_id
 
-#   eks_cluster_role           = var.eks_cluster_role
-#   eks_node_group_role        = var.eks_node_group_role
-#   fargate_pod_execution_role = var.fargate_pod_execution_role
-#   fp_namespaces              = var.fp_namespaces
+  eks_cluster_role           = module.role.eks_cluster_role
+  eks_node_group_role        = module.role.eks_node_group_role
+  fargate_pod_execution_role = module.role.fargate_pod_execution_role
+  fp_namespaces              = var.fp_namespaces
 
-#   instance_type              = var.instance_type
-#   node_autoscaling_min       = var.node_autoscaling_min
-#   node_autoscaling_desired   = var.node_autoscaling_desired
-#   node_autoscaling_max       = var.node_autoscaling_max
-# }
+  instance_type            = var.instance_type
+  node_autoscaling_min     = var.node_autoscaling_min
+  node_autoscaling_desired = var.node_autoscaling_desired
+  node_autoscaling_max     = var.node_autoscaling_max
+}

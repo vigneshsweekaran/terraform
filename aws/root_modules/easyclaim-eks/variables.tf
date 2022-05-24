@@ -19,12 +19,6 @@ variable "cluster_name" {
   type        = string
 }
 
-variable "vpc_id" {
-  description = "Vpc id"
-  type        = string
-  default     = ""
-}
-
 variable "vpc_cidr" {
   description = "Vpc cidr"
   type        = string

@@ -1,5 +1,5 @@
 resource "aws_iam_policy" "AmazonEKSClusterAutoscalerPolicy" {
-  name   = join("-", ["AmazonEKSClusterAutoscalerPolicy", tostring(local.json_data.cluster_name)])
+  name   = join("-", ["AmazonEKSClusterAutoscalerPolicy", tostring(var.cluster_name)])
   policy = <<EOF
 {
     "Version": "2012-10-17",
@@ -23,7 +23,7 @@ EOF
 }
 
 resource "aws_iam_role" "AmazonEKSClusterAutoscalerRole" {
-  name        = join("-", ["AmazonEKSClusterAutoscalerRole", tostring(local.json_data.cluster_name)])
+  name = join("-", ["AmazonEKSClusterAutoscalerRole", tostring(var.cluster_name)])
 
   force_detach_policies = true
 
@@ -57,12 +57,12 @@ resource "kubernetes_service_account" "cluster-autoscaler" {
   metadata {
     labels = {
       "k8s-addon" = "cluster-autoscaler.addons.k8s.io"
-      "k8s-app" = "cluster-autoscaler"
+      "k8s-app"   = "cluster-autoscaler"
     }
-    annotations = {   
+    annotations = {
       "eks.amazonaws.com/role-arn" = aws_iam_role.AmazonEKSClusterAutoscalerRole.arn
     }
-    name = "cluster-autoscaler"
+    name      = "cluster-autoscaler"
     namespace = "kube-system"
   }
   depends_on = [
@@ -75,7 +75,7 @@ resource "kubernetes_cluster_role" "cluster-autoscaler" {
     name = "cluster-autoscaler"
     labels = {
       "k8s-addon" = "cluster-autoscaler.addons.k8s.io"
-      "k8s-app" = "cluster-autoscaler"
+      "k8s-app"   = "cluster-autoscaler"
     }
   }
 
@@ -153,18 +153,18 @@ resource "kubernetes_cluster_role" "cluster-autoscaler" {
 
 resource "kubernetes_role" "cluster-autoscaler" {
   metadata {
-    name = "cluster-autoscaler"
+    name      = "cluster-autoscaler"
     namespace = "kube-system"
     labels = {
       "k8s-addon" = "cluster-autoscaler.addons.k8s.io"
-      "k8s-app" = "cluster-autoscaler"
+      "k8s-app"   = "cluster-autoscaler"
     }
   }
 
   rule {
-    api_groups     = [""]
-    resources      = ["configmaps"]
-    verbs          = ["create","list","watch","get","update"]
+    api_groups = [""]
+    resources  = ["configmaps"]
+    verbs      = ["create", "list", "watch", "get", "update"]
   }
   rule {
     api_groups     = ["apps"]
@@ -182,7 +182,7 @@ resource "kubernetes_cluster_role_binding" "cluster-autoscaler" {
     name = "cluster-autoscaler"
     labels = {
       "k8s-addon" = "cluster-autoscaler.addons.k8s.io"
-      "k8s-app" = "cluster-autoscaler"
+      "k8s-app"   = "cluster-autoscaler"
     }
   }
   role_ref {
@@ -207,7 +207,7 @@ resource "kubernetes_role_binding" "cluster-autoscaler" {
     namespace = "kube-system"
     labels = {
       "k8s-addon" = "cluster-autoscaler.addons.k8s.io"
-      "k8s-app" = "cluster-autoscaler"
+      "k8s-app"   = "cluster-autoscaler"
     }
   }
   role_ref {
@@ -250,8 +250,8 @@ resource "kubernetes_deployment" "cluster-autoscaler" {
           app = "cluster-autoscaler"
         }
         annotations = {
-          "prometheus.io/scrape" = "true"
-          "prometheus.io/port" = "8085"
+          "prometheus.io/scrape"                           = "true"
+          "prometheus.io/port"                             = "8085"
           "cluster-autoscaler.kubernetes.io/safe-to-evict" = "false"
         }
       }
@@ -260,14 +260,14 @@ resource "kubernetes_deployment" "cluster-autoscaler" {
         priority_class_name = "system-cluster-critical"
         security_context {
           run_as_non_root = "true"
-          run_as_user = 65534
-          fs_group = 65534
+          run_as_user     = 65534
+          fs_group        = 65534
         }
         service_account_name = "cluster-autoscaler"
         container {
           image = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.21.0"
           name  = "cluster-autoscaler"
-          
+
           resources {
             limits = {
               cpu    = "100m"
@@ -286,15 +286,15 @@ resource "kubernetes_deployment" "cluster-autoscaler" {
             "--cloud-provider=aws",
             "--skip-nodes-with-local-storage=false",
             "--expander=least-waste",
-            join("/", ["--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler", tostring(local.json_data.cluster_name)]),
+            join("/", ["--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler", tostring(var.cluster_name)]),
             "--balance-similar-node-groups",
             "--skip-nodes-with-system-pods=false"
           ]
-          
+
           volume_mount {
-            name = "ssl-certs"
+            name       = "ssl-certs"
             mount_path = "/etc/ssl/certs/ca-bundle.crt" # For other linux /etc/ssl/certs/ca-certificates.crt
-            read_only = "true"
+            read_only  = "true"
           }
           image_pull_policy = "Always"
         }

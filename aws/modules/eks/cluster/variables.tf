@@ -4,16 +4,6 @@ variable "region" {
   default     = "us-east-1"
 }
 
-variable "access_key" {
-  description = "The aws access_key, not needed if aws-cli is congigured"
-  type        = string
-}
-
-variable "secret_key" {
-  description = "The aws secret_key, not needed if aws-cli is congigured"
-  type        = string
-}
-
 variable "cluster_name" {
   description = "Eks cluster name"
   type        = string
@@ -47,6 +37,7 @@ variable "private_subnet2_id" {
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
+  default     = "t2.micro"
 }
 
 variable "node_autoscaling_min" {

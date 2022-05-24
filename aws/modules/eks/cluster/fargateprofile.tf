@@ -1,11 +1,9 @@
-data "aws_caller_identity" "current" {}
-
 resource "aws_eks_fargate_profile" "main" {
   count                  = length(var.fp_namespaces)
-  cluster_name           = tostring(local.json_data.cluster_name)
+  cluster_name           = tostring(var.cluster_name)
   fargate_profile_name   = format("fp-%s", element(var.fp_namespaces, count.index))
-  pod_execution_role_arn = local.fargate_pod_execution_role #add_role arn
-  subnet_ids             = [tostring(local.json_data.private_subnet1_id), tostring(local.json_data.private_subnet2_id)]
+  pod_execution_role_arn = var.fargate_pod_execution_role #add_role arn
+  subnet_ids             = [tostring(var.private_subnet1_id), tostring(var.private_subnet2_id)]
 
   selector {
     namespace = element(var.fp_namespaces, count.index)
@@ -132,8 +130,8 @@ resource "kubernetes_deployment" "ingress" {
           args = [
             "--ingress-class=alb",
             "--cluster-name=${data.aws_eks_cluster.cluster.id}",
-            join("=", ["--aws-vpc-id", tostring(local.json_data.vpc_id)]),
-            join("=", ["--aws-region", tostring(local.json_data.region)]),
+            join("=", ["--aws-vpc-id", tostring(var.vpc_id)]),
+            join("=", ["--aws-region", tostring(var.region)]),
             "--aws-max-retries=10",
           ]
 

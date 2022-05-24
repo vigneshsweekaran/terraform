@@ -19,21 +19,8 @@ provider "aws" {
 #   token                  = data.aws_eks_cluster_auth.default.token
 # }
 
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 3.21"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.5.0"
-    }
-  }
-}
-
-terraform {
-  backend "s3" {
-    key = "eks/easyclaim/terraform.tfstate"
-  }
-}
+# terraform {
+#   backend "s3" {
+#     key = "eks/easyclaim/terraform.tfstate"
+#   }
+# }
