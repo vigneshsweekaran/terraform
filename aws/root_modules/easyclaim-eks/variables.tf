@@ -108,3 +108,40 @@ variable "environment_name" {
   type        = string
   default     = "dev"
 }
+
+variable "namespace" {
+  description = "The Namespace name to deploy the application"
+  type        = string
+}
+
+variable "frontend_image_name" {
+  description = "The Docker image name"
+  type        = string
+}
+
+variable "frontend_image_tag" {
+  description = "The Docker image tag"
+  type        = string
+}
+
+variable "frontend_replica_count" {
+  description = "The Replica count for deployment"
+  type        = number
+  default     = 1
+}
+
+variable "backend_image_name" {
+  description = "The Docker image name"
+  type        = string
+}
+
+variable "backend_image_tag" {
+  description = "The Docker image tag"
+  type        = string
+}
+
+variable "backend_replica_count" {
+  description = "The Replica count for deployment"
+  type        = number
+  default     = 1
+}

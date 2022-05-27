@@ -40,3 +40,35 @@ module "eks" {
   node_autoscaling_desired = var.node_autoscaling_desired
   node_autoscaling_max     = var.node_autoscaling_max
 }
+
+module "easyclaim-frontend" {
+  source = "../../modules/k8s/app"
+
+  name             = "easyclaim-frontend"
+  namespace        = var.namespace
+  image_name       = var.frontend_image_name
+  image_tag        = var.frontend_image_tag
+  replica_count    = var.frontend_replica_count
+  healthcheck_path = "/"
+  healthcheck_port = 80
+
+  depends_on = [
+    module.eks
+  ]
+}
+
+module "easyclaim-backend" {
+  source = "../../modules/k8s/app"
+
+  name             = "easyclaim-backend"
+  namespace        = var.namespace
+  image_name       = var.backend_image_name
+  image_tag        = var.backend_image_tag
+  replica_count    = var.backend_replica_count
+  healthcheck_path = "/"
+  healthcheck_port = 8080
+
+  depends_on = [
+    module.eks
+  ]
+}
