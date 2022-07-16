@@ -64,10 +64,36 @@ resource "aws_security_group" "allow_http" {
   }
 }
 
+resource "aws_iam_role" "ec2-role" {
+  name = "ec2-role"
+
+  assume_role_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "ec2.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "ec2_profile"
+  role = aws_iam_role.ec2-role.name
+}
+
 resource "aws_instance" "hello-world" {
   instance_type          = "t2.micro"
   ami                    = data.aws_ami.amazonlinux2.id
   user_data              = data.template_file.user_data.rendered
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
   vpc_security_group_ids = [aws_security_group.allow_http.id]
 
   tags = {
