@@ -1,3 +1,5 @@
+data "aws_region" "current" {}
+
 data "aws_ami" "amazonlinux2" {
   most_recent = true
   owners      = ["amazon"]
@@ -23,9 +25,50 @@ data "aws_ami" "amazonlinux2" {
   }
 }
 
+data "template_file" "user_data" {
+  template = file("${path.module}/install-code-deploy-agent.sh")
+  vars = {
+    aws_region = data.aws_region.current.name
+  }
+}
+
+resource "aws_security_group" "allow_http" {
+  name        = "allow_http"
+  description = "Allow http inbound traffic"
+
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+  tags = {
+    Name = "allow_http"
+  }
+}
+
 resource "aws_instance" "hello-world" {
-  instance_type = "t2.micro"
-  ami           = data.aws_ami.amazonlinux2.id
+  instance_type          = "t2.micro"
+  ami                    = data.aws_ami.amazonlinux2.id
+  user_data              = data.template_file.user_data.rendered
+  vpc_security_group_ids = [aws_security_group.allow_http.id]
 
   tags = {
     Name        = "HelloWorld"
@@ -69,6 +112,7 @@ resource "aws_sns_topic" "hello-world" {
 resource "aws_codedeploy_deployment_group" "hello-world" {
   app_name              = aws_codedeploy_app.hello-world.name
   deployment_group_name = "hello-world-group"
+  deployment_config_name = "CodeDeployDefault.AllAtOnce"
   service_role_arn      = aws_iam_role.hello-world.arn
 
   ec2_tag_set {
@@ -86,12 +130,8 @@ resource "aws_codedeploy_deployment_group" "hello-world" {
   }
 
   auto_rollback_configuration {
-    enabled = true
+    enabled = false
     events  = ["DEPLOYMENT_FAILURE"]
   }
 
-  alarm_configuration {
-    alarms  = ["my-alarm-name"]
-    enabled = true
-  }
 }
