@@ -98,6 +98,31 @@ resource "aws_iam_role_policy" "ec2-policy" {
         "s3:List*"
       ],
       "Resource": ["*"]
+    },
+    {
+        "Sid":"GetAuthorizationToken",
+        "Effect":"Allow",
+        "Action":[
+          "ecr:GetAuthorizationToken"
+        ],
+        "Resource":"*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:GetRepositoryPolicy",
+        "ecr:DescribeRepositories",
+        "ecr:ListImages",
+        "ecr:DescribeImages",
+        "ecr:BatchGetImage",
+        "ecr:GetLifecyclePolicy",
+        "ecr:GetLifecyclePolicyPreview",
+        "ecr:ListTagsForResource",
+        "ecr:DescribeImageScanFindings"
+      ],
+      "Resource": ["${aws_ecr_repository.hello-world.arn}"]
     }
   ]
 }

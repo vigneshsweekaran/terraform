@@ -48,11 +48,30 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
       "Resource": "*"
     },
     {
-      "Effect": "Allow",
-      "Action": [
+      "Effect" : "Allow",
+      "Action" : [
         "codedeploy:CreateDeployment"
       ],
-      "Resource": [
+      "Resource" : [
+        "${aws_codedeploy_deployment_group.hello-world.arn}"
+      ]
+    },
+    {
+      "Effect" : "Allow",
+      "Action" : [
+        "codedeploy:GetDeploymentConfig"
+      ],
+      "Resource" : [
+        "*"
+      ]
+    },
+    {
+      "Effect" : "Allow",
+      "Action" : [
+        "codedeploy:GetApplicationRevision",
+        "codedeploy:RegisterApplicationRevision"
+      ],
+      "Resource" : [
         "${aws_codedeploy_app.hello-world.arn}"
       ]
     }
