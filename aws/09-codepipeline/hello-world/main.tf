@@ -51,6 +51,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
       "Effect" : "Allow",
       "Action" : [
         "codedeploy:CreateDeployment"
+        "codedeploy:GetDeployment"
       ],
       "Resource" : [
         "${aws_codedeploy_deployment_group.hello-world.arn}"
