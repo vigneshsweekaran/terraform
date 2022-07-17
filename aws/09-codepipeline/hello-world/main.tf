@@ -50,7 +50,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
     {
       "Effect" : "Allow",
       "Action" : [
-        "codedeploy:CreateDeployment"
+        "codedeploy:CreateDeployment",
         "codedeploy:GetDeployment"
       ],
       "Resource" : [
