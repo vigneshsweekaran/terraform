@@ -36,6 +36,6 @@
 	"features": {
 		"terraform": "latest",
 		"aws-cli": "latest",
-		"ansible": "latest"
+		"python": "latest"
 	}
 }
