@@ -48,6 +48,17 @@ resource "aws_instance" "jenkins" {
   vpc_security_group_ids = [aws_security_group.jenkins.id]
   key_name               = local.key_name
 
+  tags = {
+    Name        = "Jenkins"
+  }
+}
+
+resource "null_resource" "ansible-install-jenkins" {
+
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+
   provisioner "remote-exec" {
     inline = ["echo 'Verified ssh connection'"]
 
@@ -61,9 +72,5 @@ resource "aws_instance" "jenkins" {
 
   provisioner "local-exec" {
     command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook  -i ${aws_instance.jenkins.public_ip}, --private-key ${local.private_key_path} playbook.yaml"
-  }
-
-  tags = {
-    Name        = "Jenkins"
   }
 }

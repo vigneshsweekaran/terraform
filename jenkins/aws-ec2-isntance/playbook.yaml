@@ -13,11 +13,12 @@
     apt_repository:
       repo: 'deb https://pkg.jenkins.io/debian-stable binary/'
       state: present
+  - name: Update packages
+    ansible.builtin.apt:
+      update_cache: true
   - name: Install java, docker and jenkins
     ansible.builtin.apt:
-      name:
+      pkg:
         - openjdk-11-jre
         - docker.io
         - jenkins
-      state: present
-      update_cache: true
