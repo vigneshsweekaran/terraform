@@ -1,0 +1,23 @@
+---
+- name: Install Nginx
+  hosts: all
+  remote_user: ubuntu
+  become: yes
+
+  tasks:
+  - name: Add an Apt signing key, uses whichever key is at the URL
+    ansible.builtin.apt_key:
+      url: https://pkg.jenkins.io/debian/jenkins.io.key
+      state: present
+  - name: Add Jenkins repository
+    apt_repository:
+      repo: 'deb https://pkg.jenkins.io/debian-stable binary/'
+      state: present
+  - name: Install java, docker and jenkins
+    ansible.builtin.apt:
+      name:
+        - openjdk-11-jre
+        - docker.io
+        - jenkins
+      state: present
+      update_cache: true

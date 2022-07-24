@@ -35,6 +35,7 @@
 	"remoteUser": "vscode",
 	"features": {
 		"terraform": "latest",
-		"aws-cli": "latest"
+		"aws-cli": "latest",
+		"ansible": "latest"
 	}
 }
