@@ -60,7 +60,7 @@ resource "aws_instance" "jenkins" {
   }
 
   provisioner "local-exec" {
-    command = "ansible-playbook  -i ${aws_instance.jenkins.public_ip}, --private-key ${local.private_key_path} playbook.yaml"
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook  -i ${aws_instance.jenkins.public_ip}, --private-key ${local.private_key_path} playbook.yaml"
   }
 
   tags = {
