@@ -36,7 +36,8 @@
 	"features": {
 		"terraform": "latest",
 		"aws-cli": "latest",
-		"python": "latest"
+		"python": "latest",
+		"azure-cli": "latest"
 	},
 
 	// Run Bash script in .devcontainer directory
