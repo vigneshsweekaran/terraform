@@ -15,7 +15,7 @@ private_subnet2_cidr              = "192.168.192.0/18"
 private_subnet2_availability_zone = "us-west-2b"
 
 # EKS
-cluster_name             = "easyclaim"
+cluster_name             = "sample-app"
 instance_type            = "t2.medium"
 node_autoscaling_min     = 1
 node_autoscaling_desired = 1
@@ -28,8 +28,3 @@ namespace              = "dev"
 frontend_image_name    = "vigneshsweekaran/easyclaim-frontend"
 frontend_image_tag     = "latest"
 frontend_replica_count = 1
-
-# Deployment easyclaim backend
-backend_image_name    = "vigneshsweekaran/easyclaim-backend"
-backend_image_tag     = "latest"
-backend_replica_count = 1
