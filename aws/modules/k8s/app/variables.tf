@@ -24,6 +24,21 @@ variable "replica_count" {
   default     = 1
 }
 
+variable "certificate_arn" {
+  description = "Certificate arn"
+  type        = string
+}
+
+variable "listen_ports" {
+  description = "Listening ports Eg: '[{"HTTP": 80}, {"HTTPS":443}]'"
+  type        = string
+}
+
+variable "ssl_redirect" {
+  description = "SS redirect definition Eg: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'"
+  type        = string
+}
+
 variable "healthcheck_path" {
   description = "ALB healthcheck path"
   type        = string

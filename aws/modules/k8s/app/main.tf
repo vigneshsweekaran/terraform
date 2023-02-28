@@ -97,6 +97,9 @@ resource "kubernetes_ingress" "app" {
       "alb.ingress.kubernetes.io/target-type"      = "ip"
       "alb.ingress.kubernetes.io/healthcheck-path" = var.healthcheck_path
       "alb.ingress.kubernetes.io/healthcheck-port" = var.healthcheck_port
+      "alb.ingress.kubernetes.io/certificate-arn"  = var.certificate_arn
+      "alb.ingress.kubernetes.io/listen-ports"     = var.listen_ports
+      "alb.ingress.kubernetes.io/actions.ssl-redirect" = var.ssl_redirect
     }
     labels = {
       environment = var.namespace
