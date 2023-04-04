@@ -120,6 +120,8 @@ resource "kubernetes_deployment" "ingress" {
         dns_policy                       = "ClusterFirst"
         restart_policy                   = "Always"
         service_account_name             = kubernetes_service_account.ingress.metadata[0].name
+
+
         termination_grace_period_seconds = 60
 
         container {

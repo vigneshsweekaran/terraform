@@ -1,6 +1,27 @@
-variable "name" {
-  description = "The name used for deployment, service and ingress resources"
+variable "region" {
+  description = "AWS Region"
   type        = string
+  default     = "us-west-2"
+}
+
+variable "cluster_name" {
+  description = "EKS cluster name"
+  type        = string
+}
+
+variable "alb_controller_chart_version" {
+  description = "AWS ALB controller helm chart version"
+  type        = string
+}
+
+variable "alb_controller_image_repository" {
+  description = "AWS ALB Controller image repository"
+  type        = string
+}
+
+variable "include_sample_app" {
+  description = "Enable / disable deploying sample application"
+  type        = bool
 }
 
 variable "namespace" {
@@ -8,17 +29,17 @@ variable "namespace" {
   type        = string
 }
 
-variable "image_name" {
+variable "frontend_image_name" {
   description = "The Docker image name"
   type        = string
 }
 
-variable "image_tag" {
+variable "frontend_image_tag" {
   description = "The Docker image tag"
   type        = string
 }
 
-variable "replica_count" {
+variable "frontend_replica_count" {
   description = "The Replica count for deployment"
   type        = number
   default     = 1

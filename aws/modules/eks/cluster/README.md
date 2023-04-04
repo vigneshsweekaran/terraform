@@ -8,9 +8,8 @@
 * Update cluster_name, region, vpc_id, public_subnet1_id, public_subnet2_id, private_subnet1_id and private_subnet2_id in input.json
 * Update the required namespace value for fargate profile in fp_namespaces in dev1/dev2.tfvars file
 
-### Post Activities
-After creating the cluster following activities has to be done
-* Update the EKS cluster name in VPC terrform scripts. Then only AWS Load Balanser will work.
+### Post activities
+* Add tag kubernetes.io/role/internal-elb = 1 in all subnets, then only aws lb controller can create the load balancer
 
 ### Information about created EKS Cluster
 * Create one nodegroup and one Fargate profile

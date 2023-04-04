@@ -1,3 +1,15 @@
+locals {
+  local_ingress_annotations = {
+    "kubernetes.io/ingress.class"                = "alb"
+    "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
+    "alb.ingress.kubernetes.io/target-type"      = "ip"
+    "alb.ingress.kubernetes.io/group.name"       = "test"
+    "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTP\": 80}]"
+    "alb.ingress.kubernetes.io/healthcheck-path" = var.healthcheck_path
+    "alb.ingress.kubernetes.io/healthcheck-port" = var.healthcheck_port    
+  }
+}
+
 # resource "kubernetes_secret" "app" {
 #   metadata {
 #     name      = var.name
@@ -16,7 +28,7 @@
 #   }
 # }
 
-resource "kubernetes_deployment" "app" {
+resource "kubernetes_deployment_v1" "app" {
   metadata {
     name      = var.name
     namespace = var.namespace
@@ -50,7 +62,7 @@ resource "kubernetes_deployment" "app" {
           name  = var.name
 
           port {
-            container_port = 8082
+            container_port = 80
           }
 
           # env_from {
@@ -64,7 +76,7 @@ resource "kubernetes_deployment" "app" {
   }
 }
 
-resource "kubernetes_service" "app" {
+resource "kubernetes_service_v1" "app" {
   metadata {
     name      = var.name
     namespace = var.namespace
@@ -77,30 +89,21 @@ resource "kubernetes_service" "app" {
 
     port {
       port        = 80
-      target_port = 8082
+      target_port = 80
       protocol    = "TCP"
     }
 
     type = "NodePort"
   }
 
-  depends_on = [kubernetes_deployment.app]
+  depends_on = [kubernetes_deployment_v1.app]
 }
 
-resource "kubernetes_ingress" "app" {
+resource "kubernetes_ingress_v1" "app" {
   metadata {
     name      = var.name
     namespace = var.namespace
-    annotations = {
-      "kubernetes.io/ingress.class"                = "alb"
-      "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
-      "alb.ingress.kubernetes.io/target-type"      = "ip"
-      "alb.ingress.kubernetes.io/healthcheck-path" = var.healthcheck_path
-      "alb.ingress.kubernetes.io/healthcheck-port" = var.healthcheck_port
-      "alb.ingress.kubernetes.io/certificate-arn"  = var.certificate_arn
-      "alb.ingress.kubernetes.io/listen-ports"     = var.listen_ports
-      "alb.ingress.kubernetes.io/actions.ssl-redirect" = var.ssl_redirect
-    }
+    annotations = var.enable_lb_soureip ? merge(local.local_ingress_annotations, var.ingress_annotations_sourceip) : local.local_ingress_annotations
     labels = {
       environment = var.namespace
       name        = var.name
@@ -113,13 +116,37 @@ resource "kubernetes_ingress" "app" {
         path {
           path = "/*"
           backend {
-            service_name = kubernetes_service.app.metadata[0].name
-            service_port = kubernetes_service.app.spec[0].port[0].port
+            service {
+              name = kubernetes_service_v1.app.metadata[0].name
+              port {
+                number = kubernetes_service_v1.app.spec[0].port[0].port
+              }
+            }
           }
         }
       }
     }
   }
 
-  depends_on = [kubernetes_service.app]
+  depends_on = [kubernetes_service_v1.app]
+}
+
+resource "kubernetes_horizontal_pod_autoscaler_v1" "app" {
+
+  count = var.enable_hpa ? 1 : 0
+
+  metadata {
+    name      = var.name
+    namespace = var.namespace
+  }
+
+  spec {
+    min_replicas = var.hpa_min_replicas
+    max_replicas = var.hpa_max_replicas
+
+    scale_target_ref {
+      kind = "Deployment"
+      name = var.name
+    }
+  }
 }
