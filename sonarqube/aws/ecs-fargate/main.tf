@@ -92,14 +92,15 @@ resource "aws_ecs_service" "sonarqube" {
   cluster         = module.ecs.cluster_id
   task_definition = aws_ecs_task_definition.sonarqube.arn
   desired_count   = 1
-  ordered_placement_strategy {
-    type  = "binpack"
-    field = "cpu"
-  }
   load_balancer {
     target_group_arn = aws_lb_target_group.sonarqube.arn
     container_name   = "sonarqube"
     container_port   = "9000"
+  }
+  network_configuration {
+    subnets          = data.aws_subnets.default.ids
+    security_groups  = [aws_security_group.service.id]
+    assign_public_ip = false
   }
 }
 
@@ -109,7 +110,7 @@ resource "aws_lb" "sonarqube" {
   load_balancer_type         = "application"
   enable_deletion_protection = true
   security_groups            = [aws_security_group.lb.id]
-  subnets                    = [data.aws_subnets.default.id]
+  subnets                    = data.aws_subnets.default.ids
   tags                       = local.tags
 }
 
@@ -127,4 +128,14 @@ resource "aws_lb_target_group" "sonarqube" {
     create_before_destroy = true
   }
   tags = local.tags
+}
+
+resource "aws_lb_listener" "front_end" {
+  load_balancer_arn = aws_lb.sonarqube.arn
+  port              = "9000"
+  protocol          = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.sonarqube.arn
+  }
 }
