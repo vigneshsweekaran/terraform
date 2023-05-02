@@ -70,11 +70,6 @@ resource "aws_ecs_task_definition" "sonarqube" {
           "containerPort": 9000,
           "hostPort": 9000
         }
-      ],
-      "environment": [
-        {"name": "SONAR_JDBC_URL", "value": "https://postgres.com"},
-        {"name": "SONAR_JDBC_USERNAME", "value": "postgres"},
-        {"name": "SONAR_JDBC_PASSWORD", "value": "password"}
       ]
     }
   ]
@@ -100,7 +95,17 @@ resource "aws_ecs_service" "sonarqube" {
   network_configuration {
     subnets          = data.aws_subnets.default.ids
     security_groups  = [aws_security_group.service.id]
-    assign_public_ip = false
+    assign_public_ip = true
+  }
+  capacity_provider_strategy {
+    base              = 0
+    capacity_provider = "FARGATE"
+    weight            = 50
+  }
+  capacity_provider_strategy {
+    base              = 0
+    capacity_provider = "FARGATE_SPOT"
+    weight            = 50
   }
 }
 
@@ -121,7 +126,7 @@ resource "aws_lb_target_group" "sonarqube" {
   target_type = "ip"
   vpc_id      = data.aws_vpc.default.id
   health_check {
-    path    = "/sonarqube"
+    path    = "/"
     matcher = 200
   }
   lifecycle {
@@ -137,5 +142,26 @@ resource "aws_lb_listener" "front_end" {
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.sonarqube.arn
+  }
+}
+
+#RDS
+resource "aws_db_instance" "sonarqube" {
+  allocated_storage           = 10
+  db_name                     = "sonarqube"
+  engine                      = "postgres"
+  engine_version              = "13.8"
+  instance_class              = "db.t3.micro"
+  manage_master_user_password = true
+  username                    = "sonar"
+  parameter_group_name        = aws_db_parameter_group.sonarqube.name
+}
+
+resource "aws_db_parameter_group" "sonarqube" {
+  name   = "sonarqube"
+  family = "postgres13"
+  parameter {
+    name  = "log_connections"
+    value = "1"
   }
 }
