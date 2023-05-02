@@ -10,6 +10,17 @@ locals {
   )
 }
 
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+
 # Ecs clsuter
 module "ecs" {
   source  = "terraform-aws-modules/ecs/aws"
@@ -46,22 +57,28 @@ resource "aws_ecs_task_definition" "sonarqube" {
   network_mode             = "awsvpc"
   cpu                      = 1024
   memory                   = 2048
-  container_definitions    = <<TASK_DEFINITION
-[
-  {
-    "name": "sonarqube",
-    "image": "sonarqube:9.9.0-community",
-    "cpu": 1024,
-    "memory": 2048,
-    "essential": true,
-    "environment": [
-      {"name": "SONAR_JDBC_URL", "value": "https://postgres.com"},
-      {"name": "SONAR_JDBC_USERNAME", "value": "postgres"},
-      {"name": "SONAR_JDBC_PASSWORD", "value": "password"}
-    ]
-  }
-]
-TASK_DEFINITION
+  container_definitions    = <<EOF
+  [
+    {
+      "name": "sonarqube",
+      "image": "sonarqube:9.9.0-community",
+      "cpu": 1024,
+      "memory": 2048,
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 9000,
+          "hostPort": 9000
+        }
+      ],
+      "environment": [
+        {"name": "SONAR_JDBC_URL", "value": "https://postgres.com"},
+        {"name": "SONAR_JDBC_USERNAME", "value": "postgres"},
+        {"name": "SONAR_JDBC_PASSWORD", "value": "password"}
+      ]
+    }
+  ]
+  EOF
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -70,4 +87,44 @@ TASK_DEFINITION
 }
 
 # ECS Service
+resource "aws_ecs_service" "sonarqube" {
+  name            = "sonarqube"
+  cluster         = module.ecs.cluster_id
+  task_definition = aws_ecs_task_definition.sonarqube.arn
+  desired_count   = 1
+  ordered_placement_strategy {
+    type  = "binpack"
+    field = "cpu"
+  }
+  load_balancer {
+    target_group_arn = aws_lb_target_group.sonarqube.arn
+    container_name   = "sonarqube"
+    container_port   = "9000"
+  }
+}
 
+resource "aws_lb" "sonarqube" {
+  name                       = "sonarqube"
+  internal                   = false
+  load_balancer_type         = "application"
+  enable_deletion_protection = true
+  security_groups            = [aws_security_group.lb.id]
+  subnets                    = [data.aws_subnets.default.id]
+  tags                       = local.tags
+}
+
+resource "aws_lb_target_group" "sonarqube" {
+  name_prefix = "sonar"
+  port        = "9000"
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = data.aws_vpc.default.id
+  health_check {
+    path    = "/sonarqube"
+    matcher = 200
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+  tags = local.tags
+}
