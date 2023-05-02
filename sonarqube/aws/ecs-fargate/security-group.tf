@@ -8,11 +8,11 @@ resource "aws_security_group" "lb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
-    description     = "sonarqube"
-    from_port       = 9000
-    to_port         = 9000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.service.id]
+    description = "sonarqube"
+    from_port   = 9000
+    to_port     = 9000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
   tags = local.tags
 }
@@ -28,10 +28,10 @@ resource "aws_security_group" "service" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
-    from_port   = 9000
-    to_port     = 9000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port       = 9000
+    to_port         = 9000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.lb.id]
   }
   tags = local.tags
 }
