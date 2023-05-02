@@ -70,6 +70,11 @@ resource "aws_ecs_task_definition" "sonarqube" {
           "containerPort": 9000,
           "hostPort": 9000
         }
+      ],
+      "environment": [
+        {"name": "SONAR_JDBC_URL", "value": "jdbc:postgresql://${aws_db_instance.sonarqube.endpoint}"},
+        {"name": "SONAR_JDBC_USERNAME", "value": "sonar"},
+        {"name": "SONAR_JDBC_PASSWORD", "value": "sonarPassword"}
       ]
     }
   ]
@@ -152,7 +157,8 @@ resource "aws_db_instance" "sonarqube" {
   engine                      = "postgres"
   engine_version              = "13.8"
   instance_class              = "db.t3.micro"
-  manage_master_user_password = true
+  publicly_accessible         = true
+  password                    = "sonarPassword"
   username                    = "sonar"
   parameter_group_name        = aws_db_parameter_group.sonarqube.name
 }
