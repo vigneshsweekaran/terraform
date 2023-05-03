@@ -2,6 +2,7 @@ locals {
   container_image = "sonarqube:9.9.0-community"
   container_name  = "sonarqube"
   container_port  = "8080"
+  db_password     = "sonarPassword"
   tags = merge(
     var.tags,
     {
@@ -9,6 +10,8 @@ locals {
     }
   )
 }
+
+data "aws_region" "current" {}
 
 data "aws_vpc" "default" {
   default = true
@@ -50,6 +53,11 @@ module "ecs" {
   tags = local.tags
 }
 
+resource "aws_cloudwatch_log_group" "log-group" {
+  name              = "sonarqube"
+  tags = local.tags
+}
+
 # Task definition
 resource "aws_ecs_task_definition" "sonarqube" {
   family                   = "sonarqube"
@@ -57,6 +65,7 @@ resource "aws_ecs_task_definition" "sonarqube" {
   network_mode             = "awsvpc"
   cpu                      = 1024
   memory                   = 2048
+  execution_role_arn       = aws_iam_role.task_execution_role.arn
   container_definitions    = <<EOF
   [
     {
@@ -73,9 +82,22 @@ resource "aws_ecs_task_definition" "sonarqube" {
       ],
       "environment": [
         {"name": "SONAR_JDBC_URL", "value": "jdbc:postgresql://${aws_db_instance.sonarqube.endpoint}"},
-        {"name": "SONAR_JDBC_USERNAME", "value": "sonar"},
-        {"name": "SONAR_JDBC_PASSWORD", "value": "sonarPassword"}
-      ]
+        {"name": "SONAR_JDBC_USERNAME", "value": "sonar"}
+      ],
+      "secrets": [
+        {
+          "name": "SONAR_JDBC_PASSWORD",
+          "valueFrom": "${aws_ssm_parameter.rds.arn}"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "${aws_cloudwatch_log_group.log-group.name}",
+          "awslogs-region": "${data.aws_region.current.name}",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
     }
   ]
   EOF
@@ -158,7 +180,7 @@ resource "aws_db_instance" "sonarqube" {
   engine_version              = "13.8"
   instance_class              = "db.t3.micro"
   publicly_accessible         = true
-  password                    = "sonarPassword"
+  password                    = local.db_password
   username                    = "sonar"
   parameter_group_name        = aws_db_parameter_group.sonarqube.name
 }
@@ -170,4 +192,10 @@ resource "aws_db_parameter_group" "sonarqube" {
     name  = "log_connections"
     value = "1"
   }
+}
+
+resource "aws_ssm_parameter" "rds" {
+  name  = "/dev/db/password"
+  type  = "String"
+  value = local.db_password
 }
