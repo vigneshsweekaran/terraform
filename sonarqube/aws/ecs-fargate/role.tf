@@ -8,6 +8,16 @@ data "aws_iam_policy_document" "task_execution_role" {
     ]
     resources = ["${aws_ssm_parameter.rds.arn}"]
   }
+
+  statement {
+    sid    = "allowCloutwatchAccess"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_role" "task_execution_role" {

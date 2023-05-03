@@ -80,8 +80,11 @@ resource "aws_ecs_task_definition" "sonarqube" {
           "hostPort": 9000
         }
       ],
+      "command": [
+        "-Dsonar.search.javaAdditionalOpts=-Dnode.store.allow_mmap=false"
+      ],
       "environment": [
-        {"name": "SONAR_JDBC_URL", "value": "jdbc:postgresql://${aws_db_instance.sonarqube.endpoint}"},
+        {"name": "SONAR_JDBC_URL", "value": "jdbc:postgresql://${aws_db_instance.sonarqube.endpoint}/sonarqube"},
         {"name": "SONAR_JDBC_USERNAME", "value": "sonar"}
       ],
       "secrets": [
@@ -97,7 +100,14 @@ resource "aws_ecs_task_definition" "sonarqube" {
           "awslogs-region": "${data.aws_region.current.name}",
           "awslogs-stream-prefix": "ecs"
         }
-      }
+      },
+      "ulimits": [
+        {
+          "name": "nofile",
+          "softLimit": 65535,
+          "hardLimit": 65535
+        }
+      ]
     }
   ]
   EOF
@@ -183,6 +193,7 @@ resource "aws_db_instance" "sonarqube" {
   password                    = local.db_password
   username                    = "sonar"
   parameter_group_name        = aws_db_parameter_group.sonarqube.name
+  vpc_security_group_ids      = [aws_security_group.rds.id]
 }
 
 resource "aws_db_parameter_group" "sonarqube" {
