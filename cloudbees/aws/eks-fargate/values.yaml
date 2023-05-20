@@ -313,7 +313,7 @@ Agents:
   SeparateNamespace:
     # Agents.SeparateNamespace.Enabled -- If enabled, agents resources will be created in a separate namespace as well as bindings allowing masters to schedule them.
     Enabled: false
-    # Agents.SeparateNamespace.Name -- Namespace where to create agents resources. Defaults to `${namespace}-builds` where `${namespace}` is the namespace where the chart is installed.
+    # Agents.SeparateNamespace.Name -- Namespace where to create agents resources. Defaults to `namespacebuilds` where `namespace` is the namespace where the chart is installed.
     Name: null
     # Agents.SeparateNamespace.Create -- If true, the second namespace will be created when installing this chart. Otherwise, the existing namespace should be labeled with `cloudbees.com/role: agents` in order for network policies to work.
     Create: false
@@ -339,7 +339,7 @@ Persistence:
   # SSD drives will be created by this chart and used automatically.
   #
   # StorageClass: "-"
-  StorageClass: "_"
+  StorageClass: "${storage_class_name}"
   # On AKS, use the following
   # StorageClass: "managed-premium"
 
