@@ -1,5 +1,7 @@
 locals {
   name = "cloudbees"
+  namespace = "cloudbees-core"
+  version = "3.11963+e0ff1ecc63b4"
 }
 
 data "aws_availability_zones" "available" {
@@ -66,11 +68,11 @@ module "eks" {
         }
       ]
     }
-    cloudbees-core = {
-      name = "cloudbees-core"
+    local.namespace = {
+      name = local.namespace
       selectors = [
         {
-          namespace = "cloudbees-core"
+          namespace = local.namespace
         }
       ]
     }

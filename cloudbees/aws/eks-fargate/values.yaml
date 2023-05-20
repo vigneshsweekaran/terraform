@@ -1,0 +1,449 @@
+# Default values for CloudBees Core
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Subdomain -- Whether to use a DNS subdomain for each controller.
+Subdomain: false
+# ingress-nginx.Enabled -- Installs the [ingress-nginx](https://github.com/kubernetes/ingress-nginx/tree/master/charts/ingress-nginx) controller (optional).
+# Enable this section if you don't have an existing installation of ingress-nginx controller
+ingress-nginx:
+  Enabled: false
+  controller:
+    allowSnippetAnnotations: false # mitigation for CVE-2021-25742
+    ingressClassResource:
+      name: nginx
+    nodeSelector:
+      kubernetes.io/os: linux
+    service:
+      externalTrafficPolicy: Local
+    admissionWebhooks:
+      enabled: false
+  defaultBackend:
+    nodeSelector:
+      kubernetes.io/os: linux
+# Sidecar injector (optional)
+# Useful when running infrastructure (GitHub Enterprise, Nexus, etc.) using a self-signed certificate.
+# It allows you to inject certificate bundles in pods running in CloudBees Core so that they can trust provided certificates
+# without having to build custom container images.
+# Use helm inspect readme cloudbees/cloudbees-sidecar-injector to read more on this optional components
+sidecarinjector:
+  # sidecarinjector.Enabled -- Whether to enable installation of Sidecar Injector
+  Enabled: false
+# Sidecar injector (chart values - e.g. for setting security contexts)
+# cloudbees-sidecar-injector:
+#   podSecurityContext: {}
+#     fsGroup: 2000
+
+#   securityContext: {}
+#     capabilities:
+#       drop:
+#       - ALL
+#     readOnlyRootFilesystem: true
+#     runAsNonRoot: true
+#     runAsUser: 1000
+
+# Operations Center options
+OperationsCenter:
+  # OperationsCenter.Enabled -- Disable for particular use case like setting up namespaces to host masters only
+  Enabled: true
+  # Operations Center container image
+  image:
+    # OperationsCenter.image.registry -- Docker registry for Operations Center
+    registry: null
+    # OperationsCenter.image.repository -- Docker image repository for Operations Center
+    repository: 'cloudbees-cloud-core-oc'
+    # OperationsCenter.image.tag -- Docker image tag for Operations Center
+    tag: null
+    # OperationsCenter.image.pullPolicy -- https://kubernetes.io/docs/concepts/containers/images/#updating-images
+    pullPolicy: null
+  # Image pull secrets
+  # Enable this option when using a private registry.
+  # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-secret-by-providing-credentials-on-the-command-line
+  # OperationsCenter.ImagePullSecrets -- Name of image pull secret to pull private Docker images or an array of image pull secrets
+  ImagePullSecrets: null
+  # Configuration as Code (CasC) for Operations Center.
+  CasC:
+    # OperationsCenter.CasC.Enabled -- enable or disable CasC for Operations Center.
+    Enabled: false
+    # OperationsCenter.CasC.ConfigMapName -- the name of the ConfigMap used to configure Operations Center.
+    # Note: this property can point to a ConfigMap defined in OperationsCenter.ExtraConfigMaps,
+    # or any ConfigMap that exists in the cluster.
+    ConfigMapName: oc-casc-bundle
+  # OperationsCenter.Platform -- Enables specific settings depending on the platform
+  # platform specific values are: `eks`, `aws`, `gke`, `aks`, `openshift4`
+  Platform: standard
+  # OperationsCenter.HostName -- The hostname used to access Operations Center through the ingress controller.
+  HostName: null
+  # OperationsCenter.ContextPath -- the path under which Operations Center will be accessible in the given host.
+  # DEPRECATED - Use OperationsCenter.Name instead.
+  ContextPath: null
+  License:
+    Evaluation:
+      # OperationsCenter.License.Evaluation.Enabled -- Obtain a trial evaluation license upon first startup of Operations Center.
+      # FirstName, LastName, Email, and Company are all mandatory.
+      # Operations Center must be able to contact licenses.cloudbees.com over HTTPS.
+      # By using this facility you accept the license agreement: https://www.cloudbees.com/r/subscription
+      Enabled: false
+      # OperationsCenter.License.Evaluation.FirstName -- first name of evaluating user
+      FirstName: null
+      # OperationsCenter.License.Evaluation.LastName -- last name of evaluating user
+      LastName: null
+      # OperationsCenter.License.Evaluation.Email -- email address of evaluating user
+      Email: null
+      # OperationsCenter.License.Evaluation.Company -- company or organization of evaluating user
+      Company: null
+  # OperationsCenter.Name -- the name in the URL under which Operations Center will be accessible in the given host.
+  # For instance, if Subdomain is true, the URL to access Operations Center will be {{OperationsCenter.Protocol}}://{{OperationsCenter.Name}}.{{OperationsCenter.HostName}}:{{OperationsCenter.Port}}
+  # If Subdomain is false, the URL to access Operations Center will be {{OperationsCenter.Protocol}}://{{OperationsCenter.HostName}}:{{OperationsCenter.Port}}/{{OperationsCenter.Name}}
+  Name: cjoc
+  # OperationsCenter.Protocol -- the protocol used to access CJOC. Possible values are http/https.
+  Protocol: http
+  # Protocol: https
+
+  # OperationsCenter.Port -- the port used to access CJOC. Defaults to 80/443 depending on Protocol. Can be overridden.
+  # Port: 80
+
+  # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-requests-and-limits-of-pod-and-container
+  Resources:
+    Limits:
+      # OperationsCenter.Resources.Limits.Cpu -- CPU limit to run Operations Center
+      # https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#meaning-of-cpu
+      Cpu: 1
+      # OperationsCenter.Resources.Limits.Memory -- Memory limit to run Operations Center
+      # https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#meaning-of-memory
+      Memory: 2G
+      # OperationsCenter.Resources.Limits.EphemeralStorage -- Ephemeral Storage limit to run Operations Center
+      # https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#meaning-of-memory
+      # EphemeralStorage: null
+    Requests:
+      # OperationsCenter.Resources.Requests.Cpu -- CPU request to run Operations Center
+      # https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#meaning-of-cpu
+      Cpu: 1
+      # OperationsCenter.Resources.Requests.Memory -- Memory request to run Operations Center
+      # https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#meaning-of-memory
+      Memory: 2G
+      # OperationsCenter.Resources.Requests.EphemeralStorage -- Ephemeral Storage request to run Operations Center
+      # https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/#meaning-of-memory
+      # EphemeralStorage: null
+  # Environment variables that get added to the container (useful for e.g. http_proxy)
+  # ContainerEnv:
+  #   - name: http_proxy
+  #     value: "http://192.168.64.1:3128"
+
+  # OperationsCenter.JavaOpts -- Additional java options to pass to the Operations Center
+  JavaOpts: null
+  #   -Dcom.sun.management.jmxremote.port=4000
+  #   -Dcom.sun.management.jmxremote.authenticate=false
+  #   -Dcom.sun.management.jmxremote.ssl=false
+
+  # Container port where JMX is exposed
+  # JMXPort: 4000
+
+  # OperationsCenter.JenkinsOpts -- Additional arguments for jenkins.war
+  JenkinsOpts: null
+  # Security Context - ADVANCED MODE
+  # Now configurable on pod and container level using
+  # - PodSecurityContext
+  # - ContainerSecurityContext
+  # OperationsCenter.PodSecurityContext -- sets the shared fsGroup for all containers in the pod.
+  # https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#discussion
+  PodSecurityContext: {}
+  # OperationsCenter.ContainerSecurityContext -- sets the shared fsGroup for all containers in the pod.
+  ContainerSecurityContext: {}
+  # PodSecurityContext:
+  #   fsGroup: 1000
+  # ContainerSecurityContext:
+  #   allowPrivilegeEscalation: false
+  #   capabilities:
+  #     drop:
+  #       - ALL
+  #   privileged: false
+  #   runAsGroup: 1000
+  #   runAsUser: 1000
+  #   runAsNonRoot: true
+  #   readOnlyRootFilesystem: true
+
+  # Security Context - SIMPLE MODE (DEPRECATED - this mode will eventually be removed in a later release)
+  # Run the Operations Center as a specific user (defaults to uid 1000)
+  # When setting RunAsUser to a different value than 0 also set FsGroup to the same value:
+  # https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  # RunAsUser: 1000
+  # RunAsGroup: 1000
+  # Volumes that support ownership management are modified to be owned and writable by the GID specified in fsGroup
+  # Should be set to the same value as RunAsUser to ensure the volume is writable
+  # https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#discussion
+  # FsGroup: 1000
+
+  # OperationsCenter.ServicePort -- Controls the service port where Operations Center http port is exposed. Don't change this parameter unless you know what you are doing
+  ServicePort: 80
+  # OperationsCenter.ServiceAgentListenerPort -- Controls the service port where Operations Center TCP port for agents is exposed. Don't change this parameter unless you know what you are doing
+  ServiceAgentListenerPort: 50000
+  # OperationsCenter.ServiceType -- Service Type. Defaults to ClusterIP, since we recommend using an ingress controller.
+  ServiceType: ClusterIP
+  # OperationsCenter.ServiceAnnotations -- Additional annotations to put on the Operations Center service
+  ServiceAnnotations: {}
+  #   service.beta.kubernetes.io/aws-load-balancer-backend-protocol: https
+
+  # OperationsCenter.ContainerPort -- Container port for http traffic
+  ContainerPort: 8080
+  # OperationsCenter.AgentListenerPort -- Container port for agent listener traffic
+  AgentListenerPort: 50000
+  # OperationsCenter.HealthProbes -- Enable Kubernetes Liveness and Readiness Probes
+  HealthProbes: true
+  # OperationsCenter.HealthProbeLivenessFailureThreshold -- Threshold for liveness failure
+  HealthProbeLivenessFailureThreshold: 12
+  # https://wiki.jenkins.io/display/JENKINS/CSRF+Protection
+  CSRF:
+    # OperationsCenter.CSRF.ProxyCompatibility -- Proxy compatibility for the default CSRF issuer
+    ProxyCompatibility: false
+  # OperationsCenter.LoadBalancerSourceRanges -- Only applicable when using `ServiceType: LoadBalancer`
+  LoadBalancerSourceRanges:
+    - 0.0.0.0/0
+  # OperationsCenter.LoadBalancerIP -- Optionally assign a known public LB IP
+  LoadBalancerIP: null
+  # LoadBalancerIP: 1.2.3.4
+
+  # OperationsCenter.NodeSelector -- Node labels and tolerations for pod assignment
+  # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+  NodeSelector: {}
+  # OperationsCenter.Tolerations -- Specify tolerations for the Operations Center pod.
+  # See [documentation](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/)
+  Tolerations: []
+  # OperationsCenter.Annotations -- Additional annotations to put on the pod running Operations Center
+  Annotations: {}
+  Ingress:
+    # OperationsCenter.Ingress.Class -- Ingress class to use for OC and MM ingresses
+    # Should be set to the same value as ingress-nginx.controller.ingressClassResource.name if enabled
+    Class: nginx
+    # OperationsCenter.Ingress.Annotations -- annotations to put on Ingress object
+    Annotations:
+      kubernetes.io/tls-acme: 'false'
+    tls:
+      # OperationsCenter.Ingress.tls.Enable -- Set this to true in order to enable TLS on the ingress record
+      Enable: false
+      # OperationsCenter.Ingress.tls.SecretName -- The name of the secret containing the certificate
+      # and private key to terminate TLS for the ingress
+      SecretName: null
+  Route:
+    tls:
+      # OperationsCenter.Route.tls.Enable -- Set this to true in OpenShift to terminate TLS at route level
+      # Read https://docs.openshift.com/container-platform/4.6/networking/routes/secured-routes.html for details.
+      # These also apply to Hibernation monitor if enabled.
+      Enable: false
+      # OperationsCenter.Route.tls.Termination -- Type of termination
+      Termination: edge
+      # OperationsCenter.Route.tls.InsecureEdgeTerminationPolicy -- Whether to redirect http to https
+      InsecureEdgeTerminationPolicy: Redirect
+      # OperationsCenter.Route.tls.CACertificate -- CA Certificate PEM-encoded
+      CACertificate: null
+      # OperationsCenter.Route.tls.Certificate -- Certificate PEM-encoded
+      Certificate: null
+      # OperationsCenter.Route.tls.Key -- Private key PEM-encoded
+      Key: null
+      # OperationsCenter.Route.tls.DestinationCACertificate -- When using `termination=reencrypt`, destination CA PEM-encoded
+      DestinationCACertificate: null
+  # OperationsCenter.ExtraConfigMaps -- Extra configmaps deployed with the chart
+  ExtraConfigMaps: []
+  # ExtraConfigMaps:
+  # - name: my-config-map
+  #   labels:
+  #     key1: value1
+  #   annotations:
+  #     key1: value1
+  #   data:
+  #      myfile.yaml: |
+  #        foo: bar
+
+  # OperationsCenter.ExtraContainers -- Extra containers to add to the pod containing Operations Center.
+  ExtraContainers: []
+  # ExtraContainers:
+  # - name: sleep
+  #   image: tutum/curl
+  #   command: ["sleep", "infinity"]
+
+  # OperationsCenter.ExtraInitContainers -- Containers, which are run before the app containers are started.
+  ExtraInitContainers: []
+  # ExtraInitContainers:
+  # - name: init
+  #   image: busybox
+  #   command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
+
+  # OperationsCenter.ExtraGroovyConfiguration -- Provides additional init groovy scripts
+  # Each key becomes a file in /var/jenkins_config
+  ExtraGroovyConfiguration: {}
+  # ExtraGroovyConfiguration:
+  #   hello-world.groovy: |
+  #     System.out.println('Hello world!')
+
+  # OperationsCenter.TmpVolumeMedium -- Medium for the EmptyDir volume used for the TMP directory of the Operations Center
+  TmpVolumeMedium: ""
+  # OperationsCenter.ExtraVolumes -- Extra volumes to add to the pod
+  ExtraVolumes: []
+  # ExtraVolumes:
+  # - name: my-volume
+  #   configMap:
+  #     name: my-config-map
+
+  # OperationsCenter.ExtraVolumeMounts -- Extra volume mounts to add to the container containing Operations Center
+  ExtraVolumeMounts: []
+  # ExtraVolumeMounts:
+  # - name: my-volume
+  #   mountPath: /var/my-path
+  #   readOnly: true
+# Controller options
+Master:
+  # Master.Enabled -- Whether to create the resources required to schedule controllers.
+  Enabled: true
+  # Master.OperationsCenterNamespace -- When deploying Controller resources, this grants an Operations Center deployed in another namespace the right to deploy controllers
+  OperationsCenterNamespace: null
+  # container image inserted in Operations Center automatically
+  image:
+    # Master.image.registry -- Container image registry for the controller
+    registry: null
+    # Master.image.repository -- Container image repository for the controller
+    repository: 'cloudbees-core-mm'
+    # Master.image.tag -- Container image tag for the controller
+    tag: null
+  # Master.JavaOpts -- Additional Java options to pass to managed controllers. For example, setting up a JMX port
+  JavaOpts: null
+# Agent options
+Agents:
+  # Agents.Enabled -- Enable to create agent resources (service account, role)
+  Enabled: true
+  SeparateNamespace:
+    # Agents.SeparateNamespace.Enabled -- If enabled, agents resources will be created in a separate namespace as well as bindings allowing masters to schedule them.
+    Enabled: false
+    # Agents.SeparateNamespace.Name -- Namespace where to create agents resources. Defaults to `${namespace}-builds` where `${namespace}` is the namespace where the chart is installed.
+    Name: null
+    # Agents.SeparateNamespace.Create -- If true, the second namespace will be created when installing this chart. Otherwise, the existing namespace should be labeled with `cloudbees.com/role: agents` in order for network policies to work.
+    Create: false
+  image:
+    # Agents.image.registry -- Container image registry for the agent
+    registry: null
+    # Agents.image.repository -- Container image repository for the agent
+    repository: 'cloudbees-core-agent'
+    # Agents.image.tag -- Container image tag for the agent
+    tag: null
+  # Image pull secrets
+  # Enable this option when using a private registry.
+  # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-secret-by-providing-credentials-on-the-command-line
+  # Agents.ImagePullSecrets -- Name of image pull secret to pull private Docker images or an array of image pull secrets
+  ImagePullSecrets: null
+Persistence:
+  # Persistence.StorageClass -- Persistent Volume Storage Class for Jenkins Home
+  # If defined, storageClassName: <storageClass>.
+  # If set to "-", storageClassName: "", which disables dynamic provisioning.
+  # If undefined (the default) or set to null, the default storage class will be used,
+  # unless specified otherwise below.
+  # If setting OperationsCenter.Platform == gke, a storage class backed with
+  # SSD drives will be created by this chart and used automatically.
+  #
+  # StorageClass: "-"
+  StorageClass: "_"
+  # On AKS, use the following
+  # StorageClass: "managed-premium"
+
+  # Persistence.Annotations -- Annotations to put on the PVC
+  Annotations: {}
+  # Persistence.AccessMode -- Access mode for the PVC ([doc](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes))
+  AccessMode: ReadWriteOnce
+  # Persistence.Size -- Size of the Operations Center volume
+  Size: 20Gi
+# Controller hibernation
+Hibernation:
+  # Hibernation.Enabled -- Whether to enable the [Hibernation](https://docs.cloudbees.com/docs/cloudbees-ci/latest/cloud-admin-guide/managing-masters#_hibernation_of_managed_masters) feature
+  Enabled: false
+  image:
+    # Hibernation.image.registry -- container registry for the image
+    registry: cloudbees
+    # Hibernation.image.tag -- container image tag
+    tag: '284.15ee10688a32'
+    # Hibernation.image.pullPolicy -- Used to override the default pull policy
+    pullPolicy: null
+    # Hibernation.image.repository -- container image repository
+    repository: managed-master-hibernation-monitor
+  # Image pull secrets
+  # Enable this option when using a private registry.
+  # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-secret-by-providing-credentials-on-the-command-line
+  # Hibernation.ImagePullSecrets -- Name of image pull secret to pull private Docker images or an array of image pull secrets
+  ImagePullSecrets: null
+  # Hibernation.NodeSelector -- Node labels and tolerations for pod assignment
+  # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+  NodeSelector: {}
+  # Hibernation.Tolerations -- Specify tolerations for the Hibernation Monitor pod.
+  # See [documentation](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/)
+  Tolerations: []
+  PodSecurityContext: {}
+  # fsGroup: 2000
+
+  SecurityContext:
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    # runAsUser: 1000
+PodSecurityPolicy:
+  # Requires rbac.installCluster = true
+  #
+  # PodSecurityPolicy.Enabled -- Enables [Pod Security Policies](https://kubernetes.io/docs/concepts/policy/pod-security-policy/) support
+  # Enable only if the cluster supports it.
+  Enabled: false
+  # PodSecurityPolicy.Annotations -- Additional annotations to put on the PodSecurityPolicy, e.g. AppArmor/Seccomp settings
+  Annotations: {}
+NetworkPolicy:
+  # NetworkPolicy.Enabled -- Enable only if the cluster supports it. Read the [documentation](https://kubernetes.io/docs/concepts/services-networking/network-policies/) to understand what this is about.
+  Enabled: false
+  # NetworkPolicy.ingressControllerSelector -- Custom selector for the ingress-controller
+  ingressControllerSelector: []
+  #    - namespaceSelector:
+  #        matchLabels:
+  #          name: nginx-ingress
+  #      podSelector:
+  #        matchLabels:
+  #         app: nginx-ingress
+  #         component: controller
+
+  # NetworkPolicy.JMXSelectors -- Custom selectors for accessing JMX port
+  JMXSelectors: []
+#    - namespaceSelector:
+#        matchLabels:
+#          name: datadog
+#      podSelector:
+#        matchLabels:
+#         app: datadog
+
+## Install Default RBAC roles and bindings
+rbac:
+  # rbac.install -- Install `role`/`rolebindings`/`serviceAccount`.
+  # If false (and rbac is enabled in the cluster anyway), provide valid names for all service accounts.
+  install: true
+  # rbac.installCluster -- Install `clusterrole`/`clusterrolebinding`
+  # These cluster roles are optional but prevent usage of some features, so we recommend setting them up.
+  # Defaults to true, except on Openshift where it defaults to false
+  # Please refer to templates/cjoc-clusterrole-master-management.yaml in the chart
+  #installCluster: true
+
+  # rbac.serviceAccountName -- Name of the service account Operations Center will run as
+  serviceAccountName: cjoc
+  # rbac.serviceAccountAnnaotations -- Optional service account annotations to enable things like [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity#authenticating_to) permissions.
+  serviceAccountAnnotations: {}
+  # rbac.masterServiceAccountName -- Name of the service account Jenkins masters will run as
+  masterServiceAccountName: jenkins
+  # rbac.serviceAccountAnnaotations -- Optional service account annotations to enable things like [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity#authenticating_to) permissions.
+  masterServiceAccountAnnotations: {}
+  # rbac.agentServiceAccountName -- Name of the service account Jenkins agents will run as
+  agentsServiceAccountName: jenkins-agents
+  # rbac.serviceAccountAnnaotations -- Optional service account annotations to enable things like [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity#authenticating_to) permissions.
+  agentServiceAccountAnnotations: {}
+  # rbac.hibernationMonitorServiceAccountName -- Name of the service account the Hibernation monitor will run as (if enabled)
+  hibernationMonitorServiceAccountName: managed-master-hibernation-monitor
+# Common parameters for all components. These can be overridden in each component.
+Common:
+  image:
+    # Common.image.registry -- container registry for the images
+    registry: 'cloudbees'
+    # Common.image.tag -- container image tag
+    tag: '2.387.3.5'
+    # Common.image.pullPolicy -- Used to override the default pull policy for all images
+    pullPolicy: null
