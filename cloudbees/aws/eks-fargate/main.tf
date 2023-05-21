@@ -86,31 +86,61 @@ module "eks" {
 }
 
 # Install EFS CSI driver using helm
-resource "helm_release" "aws-efs-csi-driver" {
-  name       = "aws-efs-csi-driver"
-  repository = "https://kubernetes-sigs.github.io/aws-efs-csi-driver/"
-  chart      = "aws-efs-csi-driver"
-  version    = "2.4.3"
+#resource "helm_release" "aws-efs-csi-driver" {
+#  name       = "aws-efs-csi-driver"
+#  repository = "https://kubernetes-sigs.github.io/aws-efs-csi-driver/"
+#  chart      = "aws-efs-csi-driver"
+#  version    = "2.4.3"
+#
+#  namespace = "kube-system"
+#
+#  values = [
+#    templatefile("${path.module}/efs-csi-values.yaml", { replicaCount = 2 })
+#  ]
+#
+#  depends_on = [
+#    module.eks
+#  ]
+#}
 
-  namespace = "kube-system"
+# Creates AWS EFS
+resource "aws_efs_file_system" "cloudbees" {
+  creation_token = local.name
+  performance_mode = "generalPurpose"
+  throughput_mode  = "bursting"
+  encrypted        = true
 
-  values = [
-    templatefile("${path.module}/efs-csi-values.yaml", { replicaCount = 2 })
-  ]
+ # lifecycle_policy {
+ #   transition_to_ia = "AFTER_30_DAYS"
+ #   transition_to_primary_storage_class = "AFTER_1_ACCESS"
+ # }
+
+  tags = {
+    Name = local.name
+  }
 
   depends_on = [
     module.eks
   ]
 }
 
-# Creates AWS EFS
-resource "aws_efs_file_system" "cloudbees" {
-  creation_token = local.name
-
-  tags = {
-    Name = local.name
-  }
+resource "aws_efs_mount_target" "zone-a" {
+  file_system_id  = aws_efs_file_system.cloudbees.id
+  subnet_id       = module.vpc.private_subnets[0]
+  security_groups = [module.eks.cluster_primary_security_group_id]
 }
+
+resource "aws_efs_mount_target" "zone-b" {
+  file_system_id  = aws_efs_file_system.cloudbees.id
+  subnet_id       = module.vpc.private_subnets[1]
+  security_groups = [module.eks.cluster_primary_security_group_id]
+}
+
+#resource "aws_efs_mount_target" "zone-c" {
+#  file_system_id  = aws_efs_file_system.cloudbees.id
+#  subnet_id       = module.vpc.private_subnets[2]
+#  security_groups = [module.eks.cluster_primary_security_group_id]
+#}
 
 # Creates storage class
 resource "kubernetes_storage_class" "efs" {
@@ -118,18 +148,9 @@ resource "kubernetes_storage_class" "efs" {
     name = local.storage_class_name
   }
   storage_provisioner = "efs.csi.aws.com"
-  parameters = {
-    provisioningMode : efs-ap
-    fileSystemId : aws_efs_file_system.cloudbees.id
-    directoryPerms : "700"
-    gidRangeStart : "1000"
-    gidRangeEnd : "2000"
-    basePath : "/dynamic_provisioning"
-  }
-  mount_options = ["tls"]
+  reclaim_policy      = "Retain"
 
   depends_on = [
-    helm_release.aws-efs-csi-driver,
     aws_efs_file_system.cloudbees
   ]
 }

@@ -339,16 +339,16 @@ Persistence:
   # SSD drives will be created by this chart and used automatically.
   #
   # StorageClass: "-"
-  StorageClass: "${storage_class_name}"
+  StorageClass: "-"
   # On AKS, use the following
   # StorageClass: "managed-premium"
 
   # Persistence.Annotations -- Annotations to put on the PVC
   Annotations: {}
   # Persistence.AccessMode -- Access mode for the PVC ([doc](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes))
-  AccessMode: ReadWriteOnce
+  AccessMode: ReadWriteMany
   # Persistence.Size -- Size of the Operations Center volume
-  Size: 20Gi
+  Size: 5Gi
 # Controller hibernation
 Hibernation:
   # Hibernation.Enabled -- Whether to enable the [Hibernation](https://docs.cloudbees.com/docs/cloudbees-ci/latest/cloud-admin-guide/managing-masters#_hibernation_of_managed_masters) feature
