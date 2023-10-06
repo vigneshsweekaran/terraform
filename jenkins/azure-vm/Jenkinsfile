@@ -6,10 +6,7 @@ pipeline {
     timeout(time: 1, unit: 'HOURS')
   }
   parameters {
-    boolean(name: 'TERRAFORM_APPLY', defaultValue: false, description: 'Apply Terraform changes?')
-  }
-  environment {
-    VM_NAME = "dev-agent"
+    booleanParam(name: 'TERRAFORM_APPLY', defaultValue: false, description: 'Apply Terraform changes?')
   }
   stages {
     stage('Generate SSH keys') {
