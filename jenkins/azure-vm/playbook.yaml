@@ -1,0 +1,24 @@
+---
+- name: Install Jenkins
+  hosts: all
+  remote_user: azureuser
+  become: yes
+
+  tasks:
+  - name: Add an Apt signing key, uses whichever key is at the URL
+    ansible.builtin.apt_key:
+      url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+      state: present
+  - name: Add Jenkins repository
+    apt_repository:
+      repo: 'deb https://pkg.jenkins.io/debian-stable binary/'
+      state: present
+  - name: Update packages
+    ansible.builtin.apt:
+      update_cache: true
+  - name: Install java, docker jenkins and maven
+    ansible.builtin.apt:
+      pkg:
+        - openjdk-11-jre
+        - docker.io
+        - jenkins

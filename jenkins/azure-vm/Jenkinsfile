@@ -1,0 +1,60 @@
+pipeline {
+  agent any
+  options {
+    disableConcurrentBuilds()
+    buildDiscarder(logRotator(numToKeepStr: '10'))
+    timeout(time: 1, unit: 'HOURS')
+  }
+  parameters {
+    boolean(name: 'TERRAFORM_APPLY', defaultValue: false, description: 'Apply Terraform changes?')
+  }
+  environment {
+    VM_NAME = "dev-agent"
+  }
+  stages {
+    stage('Generate SSH keys') {
+      steps {
+        sh "ssh-keygen -q -t rsa -N '' -f ./jenkins <<<y >/dev/null 2>&1"
+      }
+    }
+    stage('Get Azure Resourse group name') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'azure-credential', usernameVariable: 'AZURE_USERNAME', passwordVariable: 'AZURE_PASSWORD')]) {
+          sh 'az login -u ${AZURE_USERNAME} -p ${AZURE_PASSWORD}'
+        }
+        script {
+          env.RG_NAME = sh(script: "az group list --query \"[0].name\"", returnStdout: true).trim()
+          echo "Azure Resource group name is : ${RG_NAME}"
+        }
+      }
+    }
+    stage('Terraform Init') {
+      steps {
+        sh "terraform init"
+      }
+    }
+    stage('Terraform Plan') {
+      steps {
+        sh "terraform plan -var 'resource_group_name=${env.RG_NAME}' -out=tfplan"
+      }
+    }
+    stage('Terraform Apply') {
+      when {
+        expression { params.TERRAFORM_APPLY == true }
+      }
+      steps {
+        sh "terraform apply -var 'resource_group_name=${env.RG_NAME}' tfplan"
+      }
+    }
+    stage('Terraform Output') {
+      when {
+        expression { params.TERRAFORM_APPLY == true }
+      }
+      steps {
+        script {
+          sh "terraform output"
+        }
+      }
+    }
+  }
+}
