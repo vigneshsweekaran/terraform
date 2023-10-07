@@ -2,11 +2,13 @@ pipeline {
   agent any
   options {
     disableConcurrentBuilds()
+    disableResume()
     buildDiscarder(logRotator(numToKeepStr: '10'))
     timeout(time: 1, unit: 'HOURS')
   }
   parameters {
     booleanParam(name: 'TERRAFORM_APPLY', defaultValue: false, description: 'Apply Terraform changes?')
+    booleanParam(name: 'DESTROY_ON_FAILURE', defaultValue: true, description: 'Destroy the created resources on failure ?')
   }
   environment {
     TF_ROOT = "jenkins/azure-vm"
@@ -55,6 +57,17 @@ pipeline {
           sh "terraform apply tfplan"
         }
       }
+      post {
+        failure {
+          script {
+            if(params.DESTROY_ON_FAILURE == true){
+              dir("${env.TF_ROOT}") {
+                sh "terraform destroy tfplan"
+              }
+            }
+          }
+        }
+      }
     }
     stage('Terraform Output') {
       when {
@@ -65,6 +78,11 @@ pipeline {
           sh "terraform output"
         }
       }
+    }
+  }
+  post {
+    always {
+      deleteDir()
     }
   }
 }
