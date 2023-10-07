@@ -68,7 +68,7 @@ pipeline {
           script {
             if(params.DESTROY_ON_FAILURE == true){
               dir("${env.TF_ROOT}") {
-                sh "terraform destroy -no-color"
+                sh "terraform destroy -var 'resource_group_name=${env.RG_NAME}' -no-color"
               }
             }
           }

@@ -61,7 +61,7 @@ resource "azurerm_network_security_group" "jenkins" {
   }
   security_rule {
     name                       = "allow-8080"
-    priority                   = 100
+    priority                   = 200
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
