@@ -16,9 +16,10 @@
   - name: Update packages
     ansible.builtin.apt:
       update_cache: true
-  - name: Install java, docker jenkins and maven
+  - name: "Install {{ item }}"
     ansible.builtin.apt:
-      pkg:
-        - openjdk-11-jre
-        - docker.io
-        - jenkins
+      pkg: "{{ item }}"
+    loop:
+    - openjdk-11-jre
+    - jenkins
+    - docker.io
