@@ -17,12 +17,14 @@ pipeline {
   stages {
     stage('Generate SSH keys') {
       steps {
-        dir("${env.TF_ROOT}") {
-          sh """#!/bin/bash
-            ssh-keygen -q -t rsa -N '' -f ./jenkins <<<y >/dev/null 2>&1
-          """
-          if(params.PRINT_SSH_KEY == true){
-            sh "cat jenkins"
+        script {
+          dir("${env.TF_ROOT}") {
+            sh """#!/bin/bash
+              ssh-keygen -q -t rsa -N '' -f ./jenkins <<<y >/dev/null 2>&1
+            """
+            if(params.PRINT_SSH_KEY == true){
+              sh "cat jenkins"
+            }
           }
         }
       }

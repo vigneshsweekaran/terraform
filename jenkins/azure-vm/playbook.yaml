@@ -16,10 +16,11 @@
   - name: Update packages
     ansible.builtin.apt:
       update_cache: true
-  - name: Install {{ item }}
+  - name: Install packages
     ansible.builtin.apt:
       pkg: "{{ item }}"
     loop:
     - openjdk-11-jre
     - jenkins
     - docker.io
+    - maven
