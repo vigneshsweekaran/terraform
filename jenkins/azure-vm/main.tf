@@ -30,32 +30,6 @@ resource "azurerm_public_ip" "jenkins" {
   allocation_method   = "Static"
 }
 
-resource "azurerm_network_security_group" "jenkins" {
-  name                = local.name
-  location            = data.azurerm_resource_group.jenkins.location
-  resource_group_name = var.resource_group_name
-
-  security_rule {
-    name                       = "allow-22-8080"
-    priority                   = 100
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22,8080"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-}
-
-resource "azurerm_subnet_network_security_group_association" "jenkins" {
-  subnet_id = azurerm_subnet.jenkins.id
-  network_security_group_id = azurerm_network_security_group.jenkins.id
-  depends_on = [
-    azurerm_network_security_group.jenkins
-  ]
-}
-
 resource "azurerm_network_interface" "jenkins" {
   name                = "jenkins-nic"
   location            = data.azurerm_resource_group.jenkins.location
@@ -67,6 +41,43 @@ resource "azurerm_network_interface" "jenkins" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.jenkins.id
   }
+}
+
+resource "azurerm_network_security_group" "jenkins" {
+  name                = local.name
+  location            = data.azurerm_resource_group.jenkins.location
+  resource_group_name = var.resource_group_name
+
+  security_rule {
+    name                       = "allow-22"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+  security_rule {
+    name                       = "allow-8080"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "8080"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_subnet_network_security_group_association" "jenkins" {
+  subnet_id = azurerm_subnet.jenkins.id
+  network_security_group_id = azurerm_network_security_group.jenkins.id
+  depends_on = [
+    azurerm_network_security_group.jenkins
+  ]
 }
 
 resource "azurerm_linux_virtual_machine" "jenkins" {
@@ -95,6 +106,10 @@ resource "azurerm_linux_virtual_machine" "jenkins" {
     sku       = "20_04-lts"
     version   = "latest"
   }
+
+  depends_on = [
+    azurerm_subnet_network_security_group_association.jenkins
+  ]
 }
 
 resource "null_resource" "ansible-install-jenkins" {
