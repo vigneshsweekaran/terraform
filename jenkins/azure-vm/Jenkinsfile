@@ -8,31 +8,42 @@ pipeline {
   parameters {
     booleanParam(name: 'TERRAFORM_APPLY', defaultValue: false, description: 'Apply Terraform changes?')
   }
+  environment {
+    TF_ROOT = "jenkins/azure-vm"
+  }
   stages {
     stage('Generate SSH keys') {
       steps {
-        sh "ssh-keygen -q -t rsa -N '' -f ./jenkins <<<y >/dev/null 2>&1"
+        dir("${env.TF_ROOT}") {
+          sh """#!/bin/bash
+            ssh-keygen -q -t rsa -N '' -f ./jenkins <<<y >/dev/null 2>&1
+          """
+        }
       }
     }
     stage('Get Azure Resourse group name') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'azure-credential', usernameVariable: 'AZURE_USERNAME', passwordVariable: 'AZURE_PASSWORD')]) {
-          sh 'az login -u ${AZURE_USERNAME} -p ${AZURE_PASSWORD}'
+          sh 'az login -u ${AZURE_USERNAME} -p ${AZURE_PASSWORD} --output none'
         }
         script {
-          env.RG_NAME = sh(script: "az group list --query \"[0].name\"", returnStdout: true).trim()
+          env.RG_NAME = sh(script: "az group list --query \"[0].name\" --out tsv", returnStdout: true).trim()
           echo "Azure Resource group name is : ${RG_NAME}"
         }
       }
     }
     stage('Terraform Init') {
       steps {
-        sh "terraform init"
+        dir("${env.TF_ROOT}") {
+          sh "terraform init"
+        }
       }
     }
     stage('Terraform Plan') {
       steps {
-        sh "terraform plan -var 'resource_group_name=${env.RG_NAME}' -out=tfplan"
+        dir("${env.TF_ROOT}") {
+          sh "terraform plan -var 'resource_group_name=${env.RG_NAME}' -out=tfplan"
+        }
       }
     }
     stage('Terraform Apply') {
@@ -40,7 +51,9 @@ pipeline {
         expression { params.TERRAFORM_APPLY == true }
       }
       steps {
-        sh "terraform apply -var 'resource_group_name=${env.RG_NAME}' tfplan"
+        dir("${env.TF_ROOT}") {
+          sh "terraform apply -var 'resource_group_name=${env.RG_NAME}' tfplan"
+        }
       }
     }
     stage('Terraform Output') {
@@ -48,7 +61,7 @@ pipeline {
         expression { params.TERRAFORM_APPLY == true }
       }
       steps {
-        script {
+        dir("${env.TF_ROOT}") {
           sh "terraform output"
         }
       }

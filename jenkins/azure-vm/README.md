@@ -30,3 +30,8 @@ terraform destroy \
   -auto-approve \
   tfplan
 ```
+
+### Terraform output
+```
+terraform output
+```
