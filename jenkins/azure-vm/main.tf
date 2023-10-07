@@ -30,6 +30,36 @@ resource "azurerm_public_ip" "jenkins" {
   allocation_method   = "Static"
 }
 
+resource "azurerm_network_security_group" "jenkins" {
+  name                = local.name
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+
+  security_rule {
+    name                       = "allow-22-8080"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22,8080"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  tags = {
+    environment = "Production"
+  }
+}
+
+resource "azurerm_subnet_network_security_group_association" "jenkins" {
+  subnet_id = azurerm_subnet.jenkins.id
+  network_security_group_id = azurerm_network_security_group.jenkins.id
+  depends_on = [
+    azurerm_network_security_group.jenkins
+  ]
+}
+
 resource "azurerm_network_interface" "jenkins" {
   name                = "jenkins-nic"
   location            = data.azurerm_resource_group.jenkins.location

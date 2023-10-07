@@ -14,7 +14,7 @@ terraform init
 ```
 terraform plan \
   -out=tfplan \
-  -var="resource_group_name=1-ef306028-playground-sandbox"
+  -var="resource_group_name=test"
 ```
 
 ### Terraform apply

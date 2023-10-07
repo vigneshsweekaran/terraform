@@ -16,7 +16,7 @@
   - name: Update packages
     ansible.builtin.apt:
       update_cache: true
-  - name: "Install {{ item }}"
+  - name: Install {{ item }}
     ansible.builtin.apt:
       pkg: "{{ item }}"
     loop:

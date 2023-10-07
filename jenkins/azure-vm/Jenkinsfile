@@ -37,14 +37,14 @@ pipeline {
     stage('Terraform Init') {
       steps {
         dir("${env.TF_ROOT}") {
-          sh "terraform init"
+          sh "terraform init -no-color"
         }
       }
     }
     stage('Terraform Plan') {
       steps {
         dir("${env.TF_ROOT}") {
-          sh "terraform plan -var 'resource_group_name=${env.RG_NAME}' -out=tfplan"
+          sh "terraform plan -var 'resource_group_name=${env.RG_NAME}' -out=tfplan -no-color"
         }
       }
     }
@@ -54,7 +54,7 @@ pipeline {
       }
       steps {
         dir("${env.TF_ROOT}") {
-          sh "terraform apply tfplan"
+          sh "terraform apply tfplan -no-color"
         }
       }
       post {
@@ -62,7 +62,7 @@ pipeline {
           script {
             if(params.DESTROY_ON_FAILURE == true){
               dir("${env.TF_ROOT}") {
-                sh "terraform destroy tfplan"
+                sh "terraform destroy tfplan -no-color"
               }
             }
           }
@@ -75,7 +75,7 @@ pipeline {
       }
       steps {
         dir("${env.TF_ROOT}") {
-          sh "terraform output"
+          sh "terraform output -no-color"
         }
       }
     }
