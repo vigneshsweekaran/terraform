@@ -1,5 +1,5 @@
 locals {
-  name                 = "jenkins"
+  name                 = var.name
   username             = "azureuser"
   ssh_public_key_path  = "./jenkins.pub"
   ssh_private_key_path = "./jenkins"

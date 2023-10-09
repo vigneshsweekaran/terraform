@@ -7,6 +7,7 @@ pipeline {
     timeout(time: 1, unit: 'HOURS')
   }
   parameters {
+    string(name: 'NAME', defaultValue: 'jenkins', description: 'Name for the azure resources')
     booleanParam(name: 'TERRAFORM_APPLY', defaultValue: false, description: 'Apply Terraform changes ?')
     booleanParam(name: 'DESTROY_ON_FAILURE', defaultValue: true, description: 'Destroy the created resources on failure ?')
     booleanParam(name: 'PRINT_SSH_KEY', defaultValue: true, description: 'Want to print the private ssh key ?')
@@ -50,7 +51,11 @@ pipeline {
     stage('Terraform Plan') {
       steps {
         dir("${env.TF_ROOT}") {
-          sh "terraform plan -var 'resource_group_name=${env.RG_NAME}' -out=tfplan -no-color"
+          sh """
+            terraform plan -var 'resource_group_name=${env.RG_NAME}' \
+              -var 'name=${params.NAME}' \
+              -out=tfplan -no-color
+          """
         }
       }
     }
@@ -68,7 +73,10 @@ pipeline {
           script {
             if(params.DESTROY_ON_FAILURE == true){
               dir("${env.TF_ROOT}") {
-                sh "terraform destroy -var 'resource_group_name=${env.RG_NAME}' -no-color"
+                sh """terraform destroy -var 'resource_group_name=${env.RG_NAME}' \
+                  -var 'name=${params.NAME}' \
+                  -no-color
+                """
               }
             }
           }
