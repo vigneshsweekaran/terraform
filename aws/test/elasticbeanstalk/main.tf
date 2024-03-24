@@ -17,6 +17,9 @@ data "aws_subnets" "default" {
   }
 }
 
+resource "aws_efs_file_system" "efs" {
+}
+
 data "aws_iam_policy" "elasticbeanstallk_webtier" {
   name = "AWSElasticBeanstalkWebTier"
 }
