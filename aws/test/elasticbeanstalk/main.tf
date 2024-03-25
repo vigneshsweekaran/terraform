@@ -49,7 +49,7 @@ resource "aws_iam_instance_profile" "instance" {
   role = aws_iam_role.instance.name
 }
 
-data "aws_ima_role" "service" {
+data "aws_iam_role" "service" {
   name = "AWSServiceRoleForElasticBeanstalk"
 }
 
@@ -57,7 +57,7 @@ resource "aws_elastic_beanstalk_application" "elasticbeanstalk_app" {
   name = "${local.name}-app"
 
   appversion_lifecycle {
-    service_role = data.aws_ima_role.service.arn
+    service_role = data.aws_iam_role.service.arn
   }
 }
 
