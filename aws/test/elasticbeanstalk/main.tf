@@ -20,6 +20,41 @@ data "aws_subnets" "default" {
 resource "aws_efs_file_system" "efs" {
 }
 
+data "aws_security_group" "instance" {
+  filter {
+    name   = "tag:aws:cloudformation:logical-id"
+    values = ["AWSEBSecurityGroup"]
+  }
+
+  depends_on = [
+    aws_elastic_beanstalk_environment.beanstalkappenv
+  ]
+}
+
+resource "aws_security_group" "efs" {
+  description = "EFS Security Group"
+  name_prefix = "efs-security-group"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress {
+    description = "HTTP ingress"
+    from_port   = 2049
+    to_port     = 2049
+    protocol    = "tcp"
+    security_groups = [
+      data.aws_security_group.instance.id
+    ]
+  }
+}
+
+resource "aws_efs_mount_target" "efs_mount_targets_private" {
+  for_each = toset(data.aws_subnets.default.ids)
+
+  file_system_id  = aws_efs_file_system.efs.id
+  security_groups = [aws_security_group.efs.id]
+  subnet_id       = each.value
+}
+
 resource "aws_efs_access_point" "test" {
   file_system_id = aws_efs_file_system.efs.id
 
@@ -28,7 +63,7 @@ resource "aws_efs_access_point" "test" {
     uid = 900
   }
   root_directory {
-    path = "/neo4j/data"
+    path = "/appdata"
     creation_info {
       owner_gid   = 900
       owner_uid   = 900
