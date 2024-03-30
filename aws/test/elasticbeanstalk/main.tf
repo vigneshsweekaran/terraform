@@ -171,4 +171,19 @@ resource "aws_elastic_beanstalk_environment" "beanstalkappenv" {
     name      = "SystemType"
     value     = "enhanced"
   }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "FILE_SYSTEM_ID"
+    value     = aws_efs_file_system.efs.id
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "ACCESS_POINT_ID"
+    value     = aws_efs_access_point.test.id
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "MOUNT_DIRECTORY"
+    value     = "/var/www/html"
+  } 
 }
