@@ -1,4 +1,4 @@
-provider aws {
+provider "aws" {
   region = "us-east-1"
 }
 
@@ -20,8 +20,29 @@ data "aws_subnets" "default" {
 resource "aws_efs_file_system" "efs" {
 }
 
+resource "aws_efs_access_point" "test" {
+  file_system_id = aws_efs_file_system.efs.id
+
+  posix_user {
+    gid = 900
+    uid = 900
+  }
+  root_directory {
+    path = "/neo4j/data"
+    creation_info {
+      owner_gid   = 900
+      owner_uid   = 900
+      permissions = 755
+    }
+  }
+}
+
 data "aws_iam_policy" "elasticbeanstallk_webtier" {
   name = "AWSElasticBeanstalkWebTier"
+}
+
+data "aws_iam_policy" "ssmagent" {
+  name = "AmazonSSMManagedInstanceCore"
 }
 
 resource "aws_iam_role" "instance" {
@@ -41,7 +62,7 @@ resource "aws_iam_role" "instance" {
     ]
   })
 
-  managed_policy_arns = [data.aws_iam_policy.elasticbeanstallk_webtier.arn]
+  managed_policy_arns = [data.aws_iam_policy.elasticbeanstallk_webtier.arn, data.aws_iam_policy.ssmagent.arn]
 }
 
 resource "aws_iam_instance_profile" "instance" {
@@ -56,7 +77,7 @@ resource "aws_elastic_beanstalk_application" "elasticbeanstalk_app" {
 resource "aws_elastic_beanstalk_environment" "beanstalkappenv" {
   name                = "${local.name}-env"
   application         = aws_elastic_beanstalk_application.elasticbeanstalk_app.name
-  solution_stack_name = "64bit Amazon Linux 2023 v4.1.0 running PHP 8.1"
+  solution_stack_name = "64bit Amazon Linux 2023 v4.1.1 running PHP 8.1"
   tier                = "WebServer"
 
   setting {
@@ -67,12 +88,12 @@ resource "aws_elastic_beanstalk_environment" "beanstalkappenv" {
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "IamInstanceProfile"
-    value     =  aws_iam_instance_profile.instance.name
+    value     = aws_iam_instance_profile.instance.name
   }
   setting {
     namespace = "aws:ec2:vpc"
     name      = "AssociatePublicIpAddress"
-    value     =  "True"
+    value     = "True"
   }
 
   setting {
