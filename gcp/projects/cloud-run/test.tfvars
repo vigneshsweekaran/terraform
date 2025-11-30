@@ -1,0 +1,6 @@
+project_id          = "exalted-slice-479614-f1"
+region              = "us-central1"
+repository_name     = "python-cloudrun-repo"
+service_name        = "python-service"
+image_name          = "python-app"
+image_tag           = "1.0"
