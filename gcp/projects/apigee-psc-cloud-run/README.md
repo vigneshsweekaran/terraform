@@ -30,7 +30,7 @@ This setup creates:
 .
 ├── provider.tf           # Terraform and provider configuration
 ├── variables.tf          # Input variables
-├── terraform.tfvars.example  # Example variables file
+├── terraform.tfvars      # variables file
 ├── 00-network.tf         # VPC, subnets (apigee, PSC, proxy)
 ├── 01-apigee.tf          # Apigee org, instance, environment
 ├── 02-cloud-run.tf       # Cloud Run, Internal LB, PSC attachment
@@ -53,10 +53,6 @@ gcloud services enable \
 ```
 
 ### 2. Configure Variables
-
-```bash
-cp terraform.tfvars.example terraform.tfvars
-```
 
 Edit `terraform.tfvars`:
 ```hcl
@@ -138,7 +134,6 @@ mkdir -p apiproxy/proxies apiproxy/targets
 
 # Create proxy endpoint
 cat > apiproxy/proxies/default.xml <<EOF
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ProxyEndpoint name="default">
     <HTTPProxyConnection>
         <BasePath>/cloudrun</BasePath>
@@ -151,17 +146,15 @@ EOF
 
 # Create target endpoint
 cat > apiproxy/targets/default.xml <<EOF
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <TargetEndpoint name="default">
     <HTTPTargetConnection>
-        <URL>http://\${ENDPOINT_HOST}</URL>
+        <URL>http://${ENDPOINT_HOST}</URL>
     </HTTPTargetConnection>
 </TargetEndpoint>
 EOF
 
 # Create API proxy config
 cat > apiproxy/cloudrun-proxy.xml <<EOF
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <APIProxy name="cloudrun-proxy">
     <DisplayName>Cloud Run Proxy</DisplayName>
     <Description>API Proxy to Cloud Run via PSC</Description>
@@ -178,14 +171,14 @@ AUTH=$(gcloud auth print-access-token)
 
 # Import API proxy
 curl -X POST \
-  "https://apigee.googleapis.com/v1/organizations/\$PROJECT_ID/apis?action=import&name=cloudrun-proxy" \
-  -H "Authorization: Bearer \$AUTH" \
+  "https://apigee.googleapis.com/v1/organizations/$PROJECT_ID/apis?action=import&name=cloudrun-proxy" \
+  -H "Authorization: Bearer $AUTH" \
   -F "file=@cloudrun-proxy.zip"
 
 # Deploy API proxy
 curl -X POST \
-  "https://apigee.googleapis.com/v1/organizations/\$PROJECT_ID/environments/\$APIGEE_ENV/apis/cloudrun-proxy/revisions/1/deployments" \
-  -H "Authorization: Bearer \$AUTH" \
+  "https://apigee.googleapis.com/v1/organizations/$PROJECT_ID/environments/$APIGEE_ENV/apis/cloudrun-proxy/revisions/1/deployments" \
+  -H "Authorization: Bearer $AUTH" \
   -H "Content-Type: application/json"
 ```
 
@@ -194,13 +187,19 @@ curl -X POST \
 ```bash
 # Get the load balancer IP
 LB_IP=$(terraform output -raw load_balancer_ip)
+APIGEE_HOSTNAME=$(terraform output -raw apigee_hostname)
 
-# Test external access
-curl -v http://\$LB_IP/cloudrun
+# Test HTTP endpoint (from your local machine)
+curl -v http://$APIGEE_HOSTNAME/cloudrun/json
+curl -v http://$APIGEE_HOSTNAME/cloudrun/get
+
+# Or using the Load Balancer IP directly
+curl http://$LB_IP/cloudrun/json -H "Host: $APIGEE_HOSTNAME"
+curl http://$LB_IP/cloudrun/get -H "Host: $APIGEE_HOSTNAME"
 
 # For internal access (from a VM in the VPC)
 PSC_IP=$(terraform output -raw psc_endpoint_ip)
-curl -v http://\$PSC_IP/cloudrun
+curl -v http://$PSC_IP/cloudrun
 ```
 
 ## Variables

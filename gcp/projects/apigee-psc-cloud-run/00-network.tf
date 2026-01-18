@@ -31,3 +31,29 @@ resource "google_compute_subnetwork" "proxy_subnet" {
   purpose       = "REGIONAL_MANAGED_PROXY"
   role          = "ACTIVE"
 }
+
+# Firewall Rule to allow PSC NAT traffic to Internal LB
+resource "google_compute_firewall" "allow_psc_ingress" {
+  name    = "allow-psc-ingress"
+  network = google_compute_network.apigee_network.id
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "443", "8080"]
+  }
+
+  source_ranges = [var.psc_subnet_range]
+}
+
+# Firewall Rule to allow Proxy Subnet to access Backends (PSC NEGs, ILBs)
+resource "google_compute_firewall" "allow_proxy_to_app" {
+  name    = "allow-proxy-to-app"
+  network = google_compute_network.apigee_network.id
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "443", "8080"]
+  }
+
+  source_ranges = [var.proxy_subnet_range]
+}

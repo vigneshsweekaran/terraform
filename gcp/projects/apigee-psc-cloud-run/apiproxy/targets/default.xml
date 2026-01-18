@@ -1,0 +1,5 @@
+<TargetEndpoint name="default">
+    <HTTPTargetConnection>
+        <URL>http://10.0.0.2</URL>
+    </HTTPTargetConnection>
+</TargetEndpoint>

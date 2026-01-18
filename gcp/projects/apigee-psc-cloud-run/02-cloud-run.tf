@@ -1,22 +1,19 @@
-# Enable Cloud Run API
-resource "google_project_service" "run" {
-  service            = "run.googleapis.com"
-  disable_on_destroy = false
-}
-
 # Cloud Run V2 Service
 resource "google_cloud_run_v2_service" "backend" {
   name     = var.cloud_run_service
   location = var.region
   ingress  = "INGRESS_TRAFFIC_INTERNAL_ONLY"
+  invoker_iam_disabled  = true
+  deletion_protection   = false
 
   template {
     containers {
       image = var.cloud_run_image
+      ports {
+        container_port = 80
+      }
     }
   }
-
-  depends_on = [google_project_service.run]
 }
 
 # Serverless NEG for Cloud Run
@@ -66,6 +63,7 @@ resource "google_compute_forwarding_rule" "cloudrun_forwarding_rule" {
   target                = google_compute_region_target_http_proxy.cloudrun_proxy.id
   port_range            = "80"
   ip_protocol           = "TCP"
+  depends_on            = [google_compute_subnetwork.proxy_subnet]
 }
 
 # PSC Service Attachment for Cloud Run

@@ -1,0 +1,4 @@
+<APIProxy name="cloudrun-proxy">
+    <DisplayName>Cloud Run Proxy</DisplayName>
+    <Description>API Proxy to Cloud Run via PSC</Description>
+</APIProxy>

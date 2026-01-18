@@ -1,17 +1,11 @@
-# Enable Apigee API
-resource "google_project_service" "apigee" {
-  service            = "apigee.googleapis.com"
-  disable_on_destroy = false
-}
-
 # Apigee Organization
 resource "google_apigee_organization" "org" {
-  analytics_region                     = var.region
+  analytics_region                    = var.region
   project_id                          = var.project_id
   runtime_type                        = "CLOUD"
   disable_vpc_peering                 = true
-  
-  depends_on = [google_project_service.apigee]
+  # Possible values: EVALUATION, SUBSCRIPTION. Default: EVALUATION
+  billing_type                        = "EVALUATION"
 }
 
 # Apigee Instance
@@ -29,6 +23,9 @@ resource "google_apigee_environment" "environment" {
   name         = var.apigee_env
   display_name = var.apigee_env
   description  = "Apigee Evaluation Environment"
+  # Possible values: BASE, INTERMEDIATE, COMPREHENSIVE
+  # Default: null (Type is determined by the Organization's billing type if not specified)
+  # type         = "BASE"
 }
 
 # Apigee Environment Group

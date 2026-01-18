@@ -20,10 +20,12 @@ resource "google_compute_region_backend_service" "apigee_backend" {
   name                  = "apigee-backend"
   region                = var.region
   load_balancing_scheme = "EXTERNAL_MANAGED"
-  protocol              = "HTTP"
+  protocol              = "HTTPS"
 
   backend {
-    group = google_compute_region_network_endpoint_group.apigee_psc_neg.id
+    group           = google_compute_region_network_endpoint_group.apigee_psc_neg.id
+    balancing_mode  = "UTILIZATION"
+    capacity_scaler = 1.0
   }
 }
 

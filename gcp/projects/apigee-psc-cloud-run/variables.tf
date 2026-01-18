@@ -84,7 +84,7 @@ variable "cloud_run_service" {
 variable "cloud_run_image" {
   description = "Cloud Run Container Image"
   type        = string
-  default     = "us-docker.pkg.dev/cloudrun/container/hello"
+  default     = "kennethreitz/httpbin"
 }
 
 variable "lb_name" {
