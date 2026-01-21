@@ -38,3 +38,41 @@ variable "enable_private_ip_google_access" {
   type        = bool
   default     = true
 }
+
+# PSC Subnet Variables
+variable "enable_psc_subnet" {
+  description = "Whether to create a PSC subnet."
+  type        = bool
+  default     = false
+}
+
+variable "psc_subnet_name" {
+  description = "Name of the PSC subnet."
+  type        = string
+  default     = "psc-subnet"
+}
+
+variable "psc_subnet_range" {
+  description = "CIDR range for the PSC subnet."
+  type        = string
+  default     = null
+}
+
+# Proxy Subnet Variables
+variable "enable_proxy_subnet" {
+  description = "Whether to create a Proxy-only subnet."
+  type        = bool
+  default     = false
+}
+
+variable "proxy_subnet_name" {
+  description = "Name of the Proxy subnet."
+  type        = string
+  default     = "proxy-subnet"
+}
+
+variable "proxy_subnet_range" {
+  description = "CIDR range for the Proxy subnet."
+  type        = string
+  default     = null
+}

@@ -40,3 +40,13 @@ output "cloudrun_egress_subnet_region" {
   description = "The region of the Cloud Run egress subnet (null if not created)."
   value       = var.create_cloudrun_egress_subnet ? google_compute_subnetwork.cloudrun_egress_subnet[0].region : null
 }
+
+output "psc_subnet_id" {
+  description = "ID of the PSC subnet."
+  value       = var.enable_psc_subnet ? google_compute_subnetwork.psc_subnet[0].id : null
+}
+
+output "proxy_subnet_id" {
+  description = "ID of the Proxy subnet."
+  value       = var.enable_proxy_subnet ? google_compute_subnetwork.proxy_subnet[0].id : null
+}

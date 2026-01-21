@@ -1,0 +1,8 @@
+<TargetEndpoint name="target2">
+    <HTTPTargetConnection>
+        <LoadBalancer>
+            <Server name="target-server-2"/>
+        </LoadBalancer>
+        <Path>/json</Path>
+    </HTTPTargetConnection>
+</TargetEndpoint>

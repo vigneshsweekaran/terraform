@@ -51,12 +51,10 @@ resource "google_compute_firewall" "allow_icmp_internal" {
     protocol = "icmp"
   }
 
-  source_ranges = [
-    google_compute_subnetwork.main_subnet.ip_cidr_range,
-    # If cloudrun_egress_subnet is created, allow it too
-    # This conditional reference requires careful handling of the count
-    var.create_cloudrun_egress_subnet ? google_compute_subnetwork.cloudrun_egress_subnet[0].ip_cidr_range : null
-  ]
+  source_ranges = concat(
+    [google_compute_subnetwork.main_subnet.ip_cidr_range],
+    var.create_cloudrun_egress_subnet ? [google_compute_subnetwork.cloudrun_egress_subnet[0].ip_cidr_range] : []
+  )
 }
 
 resource "google_compute_firewall" "allow_vpn" {
@@ -91,4 +89,25 @@ resource "google_compute_firewall" "allow_all_egress" {
   }
   # This usually matches GCP's default behavior.
   # Add target_tags if you only want this to apply to specific VMs.
+}
+
+# PSC Subnet
+resource "google_compute_subnetwork" "psc_subnet" {
+  count         = var.enable_psc_subnet ? 1 : 0
+  name          = var.psc_subnet_name
+  ip_cidr_range = var.psc_subnet_range
+  region        = var.region
+  network       = google_compute_network.custom_vpc.id
+  purpose       = "PRIVATE_SERVICE_CONNECT"
+}
+
+# Proxy-only Subnet
+resource "google_compute_subnetwork" "proxy_subnet" {
+  count         = var.enable_proxy_subnet ? 1 : 0
+  name          = var.proxy_subnet_name
+  ip_cidr_range = var.proxy_subnet_range
+  region        = var.region
+  network       = google_compute_network.custom_vpc.id
+  purpose       = "REGIONAL_MANAGED_PROXY"
+  role          = "ACTIVE"
 }

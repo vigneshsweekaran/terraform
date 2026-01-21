@@ -1,0 +1,11 @@
+<ProxyEndpoint name="default">
+  <HTTPProxyConnection>
+    <BasePath>/target-test</BasePath>
+  </HTTPProxyConnection>
+  <RouteRule name="route-target-1">
+    <TargetEndpoint>target1</TargetEndpoint>
+  </RouteRule>
+  <RouteRule name="route-target-2">
+    <TargetEndpoint>target2</TargetEndpoint>
+  </RouteRule>
+</ProxyEndpoint>
